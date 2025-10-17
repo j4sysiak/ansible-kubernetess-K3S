@@ -1,0 +1,12 @@
+---
+# tasks file for helm_installer
+- name: Download the Helm installation script
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+    dest: /tmp/get_helm_3.sh
+    mode: '0755'
+
+- name: Run the Helm installation script
+  ansible.builtin.shell: /tmp/get_helm_3.sh
+  args:
+    creates: /usr/local/bin/helm # <-- To jest klucz do idempotencji!
