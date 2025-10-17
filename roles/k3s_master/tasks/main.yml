@@ -1,0 +1,81 @@
+- name: Download K3s installation script
+  ansible.builtin.get_url:
+    url: https://get.k3s.io
+    dest: /tmp/install-k3s.sh
+    mode: '0755'
+
+- name: Zainstaluj fuse-overlayfs
+  ansible.builtin.apt:
+    name: fuse-overlayfs
+    state: present
+    update_cache: yes
+
+- name: Zainstaluj K3s (bez tworzenia usługi systemd)
+  ansible.builtin.command: /tmp/install-k3s.sh
+  environment:
+    INSTALL_K3S_SKIP_ENABLE: "true"
+
+- name: Utwórz katalog konfiguracyjny K3s
+  ansible.builtin.file:
+    path: /etc/rancher/k3s
+    state: directory
+    mode: '0755'
+
+- name: Ustaw snapshotter w `config.yaml`
+  ansible.builtin.copy:
+    dest: /etc/rancher/k3s/config.yaml
+    mode: '0644'
+    content: |
+      snapshotter: fuse-overlayfs
+      disable:
+        - traefik
+
+- name: Uruchom K3s jako proces w tle (bez systemd)
+  ansible.builtin.shell: "nohup /usr/local/bin/k3s server > /var/log/k3s.log 2>&1 &"
+  async: 10
+  poll: 0
+
+# ***********************************************************************
+
+
+- name: Poczekaj na pojawienie się kubeconfig
+  ansible.builtin.wait_for:
+    path: /etc/rancher/k3s/k3s.yaml
+    timeout: 180
+
+
+- name: Wyświetl log K3s po niepowodzeniu
+  ansible.builtin.shell: tail -n 50 /var/log/k3s.log
+  register: k3s_log_output
+  failed_when: false
+
+- name: Pokaż log K3s
+  ansible.builtin.debug:
+    var: k3s_log_output.stdout
+
+
+
+
+- name: Create .kube directory for root user
+  ansible.builtin.file:
+    path: /root/.kube
+    state: directory
+    mode: '0700'
+
+- name: Copy kubeconfig file for root user
+  ansible.builtin.copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: /root/.kube/config
+    remote_src: yes
+    owner: root
+    mode: '0600'
+
+- name: Fetch kubeconfig from the master node to local machine
+  ansible.builtin.fetch:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: "{{ playbook_dir }}/k3s-kubeconfig"
+    flat: yes
+
+- name: Display a message about the kubeconfig
+  ansible.builtin.debug:
+    msg: "Kubeconfig for your cluster has been saved to {{ playbook_dir }}/k3s-kubeconfig. You can now use 'kubectl --kubeconfig=k3s-kubeconfig get nodes'"

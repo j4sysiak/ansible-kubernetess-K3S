@@ -1,0 +1,5 @@
+---
+- name: Deploy K3s Master Server to Docker
+  hosts: k3s_master
+  roles:
+    - role: k3s_master
