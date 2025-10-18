@@ -1,0 +1,9 @@
+---
+- name: Deploy a Helm chart to the Kubernetes cluster
+  hosts: localhost
+  connection: local
+  vars:
+    # Definiujemy ścieżkę do naszego pliku kubeconfig
+    kubeconfig_path: "{{ playbook_dir }}/k3s-kubeconfig"
+  roles:
+    - role: deploy_app
