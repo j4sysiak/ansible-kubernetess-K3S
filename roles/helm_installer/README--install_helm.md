@@ -2,7 +2,7 @@
 
 # ansible-playbook install_helm.yml --ask-become-pass
 
-password n a roota: jacek
+password na roota: jacek
 
 
 lub 
@@ -54,7 +54,10 @@ helm install my-ingress ingress-nginx/ingress-nginx --namespace ingress-nginx --
 # *** Nowy, Bardziej Zaawansowany Krok: Wdrażanie Aplikacji za pomocą Helma i Ansible
 # ***********************************************************************************
 
-Stworzymy nową, super użyteczną rolę: deploy_app. Ta rola nie będzie instalować oprogramowania za pomocą apt. Zamiast tego, użyje komendy helm, którą właśnie zainstalowaliśmy, aby wdrożyć gotową aplikację (chart) do naszego klastra Kubernetes.
+Stworzymy nową, super użyteczną rolę: deploy_app - 'ansible-kubernetess-K3S\roles\deploy_app'
+Ta rola nie będzie instalować oprogramowania za pomocą apt. 
+Zamiast tego, użyje komendy helm, którą właśnie zainstalowaliśmy, 
+        aby wdrożyć gotową aplikację (chart) do naszego klastra Kubernetes.
 To nauczy Cię, jak orkiestrować narzędzia wiersza poleceń za pomocą Ansible.
 Nasz cel: Zautomatyzujemy wdrożenie ingress-nginx, którego wcześniej instalowałeś ręcznie.
 
