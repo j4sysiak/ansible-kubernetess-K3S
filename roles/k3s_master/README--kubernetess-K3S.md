@@ -1,22 +1,5 @@
-docker run \
--d \
---name k3s-master \
---hostname k3s-master \
---privileged  -v /dev:/dev \
---cgroupns=host \
--p 6443:6443 \
--p 8081:80 \
--p 2222:22 \
-ubuntu:22.04 \
-sleep infinity
 
- 
-
-
-# docker ps
-# docker inspect k3s-master
-
-Musimy zainstalować w nim serwer SSH, aby Ansible mógł się połączyć.
+Musimy zainstalować w Dockerze serwer SSH, aby Ansible mógł się połączyć.
 
 
 1. **Wejdź do kontenera i zainstaluj SSH:**
@@ -52,7 +35,7 @@ zatrzymaj kontener:
 # docker stop k3s-master
 
 uruchom ponownie kontener i sprawdź status SSH:
-# docker start k3s-master
+# docker start k3s-master   lub   docker restart k3s-master
 
 start usługi ssh i sprawdź jej status:
 ***** UWAGA: Za każdym razem, gdy restartujesz Dockera, musisz ręcznie uruchomić usługę SSH w tym kontenerze!
@@ -61,12 +44,11 @@ start usługi ssh i sprawdź jej status:
 # service ssh status
 
 # ************************** only once *****************************************
+# cd /path/to/your/ansible-kubernetess-K3S
 # ansible-playbook  bootstrap_k3s.yml
 # ******************************************************************************
    
-Wykonaj powyższe kroki, aby wejść do kontenera i uruchomić usługę SSH.
 Natychmiast po tym, uruchom ponownie główny playbook (nie bootstrap, tylko ten główny):
-
 # ansible-playbook k3s_master_destroy.yml
 # ansible-playbook deploy_k3s_master.yml
 
