@@ -5,13 +5,13 @@ W terminalu WSL (lub Intelij) aktywuj środowisko:
 ----------------  roles/k3s_master  --------------------
 # Step.1
 zbudować i uruchomić kontener Docker z K3s Master:
-GO TO --> roles/k3s_master/README--Docker--first.md
+GO TO --> roles/k3s_master/README--FIRST---Docker.md
 
 # Step.2
-GO TO --> README--kubernetess-K3S.md
+GO TO --> README--SECOND--kubernetess-K3S.md
 
 # Step.3
-GO TO --> README--kubernetess--checkings-after-deployment.md
+GO TO --> README--THIRD--kubernetess--checkings-after-deployment.md
 
 # Step.4
 GO TO --> roles/helm_installer/README--install_helm.md

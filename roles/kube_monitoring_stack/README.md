@@ -1,38 +1,32 @@
-Role Name
-=========
+1. Zainstaluj kolekcję community.kubernetes (zawiera ona moduł Helm):
+# ansible-galaxy collection install community.kubernetes
 
-A brief description of the role goes here.
+Starting galaxy collection install process
+Process install dependency map
+Starting collection install process
+Downloading https://galaxy.ansible.com/api/v3/plugin/ansible/content/published/collections/artifacts/community-kubernetes-2.0.1.tar.gz to /home/jacek/.ansible/tmp/ansible-local-126046fcfucf3/tmplm334ulj/community-kubernetes-2.0.1-gjj73dxz
+Installing 'community.kubernetes:2.0.1' to '/home/jacek/.ansible/collections/ansible_collections/community/kubernetes'
+community.kubernetes:2.0.1 was installed successfully
+'kubernetes.core:5.4.1' is already installed, skipping.
 
-Requirements
-------------
+*********************************************************
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Twoja Misja
+1. Upewnij się, że Twój klaster K3s i ingress-nginx działają.
 
-Role Variables
---------------
+ 
+2. Uruchom playbook: 
+# ansible-playbook deploy_monitoring.yml      (Może to potrwać kilka minut).
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+3. Weryfikacja:
+Sprawdź pody: 
+# kubectl --kubeconfig=k3s-kubeconfig get pods -n monitoring
 
-Dependencies
-------------
+Sprawdź Ingress: 
+# kubectl --kubeconfig=k3s-kubeconfig get ingress -n monitoring
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+Wielki Finał:
+Edytuj plik C:\Windows\System32\drivers\etc\hosts jako administrator i dodaj linię: 127.0.0.1 grafana.local
+Otwórz przeglądarkę i wejdź na http://grafana.local:8081
+Zaloguj się (użytkownik: admin, hasło: prom-operator) i zobacz gotowe dashboardy monitorujące Twój klaster.
 
-Example Playbook
-----------------
-
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
-
-License
--------
-
-BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).

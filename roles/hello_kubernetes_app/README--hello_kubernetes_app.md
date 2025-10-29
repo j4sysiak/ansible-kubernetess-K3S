@@ -30,6 +30,14 @@ Uruchamiamy playbooka, który wywoła naszą nową rolę:
 # Etap 5: Weryfikacja:
 Sprawdź, czy pody działają:
 # kubectl --kubeconfig=k3s-kubeconfig get pods
+    NAME                               READY   STATUS         RESTARTS   AGE
+    hello-kubernetes-bd87d88d7-6stgr   0/1     ErrImagePull   0          16s
+    hello-kubernetes-bd87d88d7-c6dhf   0/1     ErrImagePull   0          16s
+    hello-kubernetes-bd87d88d7-vgbxh   0/1     ErrImagePull   0          16s
+
 Sprawdź, czy zasób Ingress został stworzony:
 # kubectl --kubeconfig=k3s-kubeconfig get ingress
-Finał: Otwórz przeglądarkę i wejdź na adres http://localhost:8081.
+    No resources found in default namespace.
+
+Finał: Otwórz przeglądarkę i wejdź na adres http://localhost:8081
+        Ta strona nie działa

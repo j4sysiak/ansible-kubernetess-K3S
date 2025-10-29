@@ -39,25 +39,16 @@ version.BuildInfo{Version:"v3.19.0", GitCommit:"3d8990f0836691f0229297773f352459
 
 **************************************************************8
 
-# Dodaj repozytorium z Ingress Nginx
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+Dodaj repozytorium z Ingress Nginx
+# helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 
-# Zaktualizuj listę dostępnych chartów
-helm repo update
+Zaktualizuj listę dostępnych chartów
+# helm repo update
 
-# Zainstaluj Ingress Nginx w swoim klastrze (pamiętaj o kubeconfig)
-helm install my-ingress ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --kubeconfig=k3s-kubeconfig
+Zainstaluj Ingress Nginx w swoim klastrze (pamiętaj o kubeconfig)
+# helm install my-ingress ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --kubeconfig=k3s-kubeconfig
 ```Po wykonaniu tych komend, zobaczysz, że `kubectl get pods -n ingress-nginx` pokaże te same pody, które widziałeś wcześniej, ale tym razem zainstalowane i zarządzane przez Helma
 
-
-# ***********************************************************************************
-# *** Nowy, Bardziej Zaawansowany Krok: Wdrażanie Aplikacji za pomocą Helma i Ansible
-# ***********************************************************************************
-
-Stworzymy nową, super użyteczną rolę: deploy_app - 'ansible-kubernetess-K3S\roles\deploy_app'
-Ta rola nie będzie instalować oprogramowania za pomocą apt. 
-Zamiast tego, użyje komendy helm, którą właśnie zainstalowaliśmy, 
-        aby wdrożyć gotową aplikację (chart) do naszego klastra Kubernetes.
-To nauczy Cię, jak orkiestrować narzędzia wiersza poleceń za pomocą Ansible.
-Nasz cel: Zautomatyzujemy wdrożenie ingress-nginx, którego wcześniej instalowałeś ręcznie.
-
+# kubectl get pods -n ingress-nginx
+    NAME                                                   READY   STATUS              RESTARTS   AGE
+    my-ingress-ingress-nginx-controller-6b974db7d5-qcglk   0/1     ContainerCreating   0          49s
