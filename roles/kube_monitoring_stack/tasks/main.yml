@@ -1,0 +1,19 @@
+---
+# tasks file for kube_monitoring_stack
+- name: Add Prometheus Community Helm repository
+  community.kubernetes.helm_repository:
+    name: prometheus-community
+    repo_url: "https://prometheus-community.github.io/helm-charts"
+    kubeconfig: "{{ kubeconfig_path }}"
+
+- name: Deploy Kube Prometheus Stack using Helm
+  community.kubernetes.helm:
+    name: "prometheus-stack"
+    chart_ref: "prometheus-community/kube-prometheus-stack"
+    release_namespace: "monitoring"
+    create_namespace: true
+    kubeconfig: "{{ kubeconfig_path }}"
+    values_files:
+      - "{{ role_path }}/files/lightweight-values.yaml"
+    set_values:
+      - value: grafana.ingress.hosts[0]={{"grafana.local"}}

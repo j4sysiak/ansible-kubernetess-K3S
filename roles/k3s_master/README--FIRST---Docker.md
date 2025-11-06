@@ -1,5 +1,9 @@
+
+# cd roles/k3s_master
+
 # chmod +x docker-entrypoint.sh
 # chmod +x Dockerfile
+
 
 # docker build -t k3s-master-image .
 
