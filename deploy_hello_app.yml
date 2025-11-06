@@ -1,0 +1,8 @@
+---
+- name: Deploy the 'Hello Kubernetes' application
+  hosts: localhost
+  connection: local
+  vars:
+    kubeconfig_path: "{{ playbook_dir }}/k3s-kubeconfig"
+  roles:
+    - role: hello_kubernetes_app

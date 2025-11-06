@@ -1,0 +1,28 @@
+# Lightweight values for kube-prometheus-stack
+alertmanager:
+  enabled: false
+
+grafana:
+  adminPassword: "prom-operator" # Proste hasło do testów
+  ingress:
+    enabled: true
+    # Uwaga: nie definiujemy tutaj 'hosts', zrobimy to dynamicznie
+    path: /
+    pathType: Prefix
+
+prometheus:
+  prometheusSpec:
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 1Gi # Zmniejszamy wymaganą przestrzeń dyskową
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 200m
+        memory: 512Mi

@@ -1,0 +1,40 @@
+---
+- name: Destroy K3s master node
+  hosts: k3s_master
+  become: true
+  tasks:
+    - name: Zatrzymaj procesy K3s
+      ansible.builtin.shell: |
+        pkill -f '/usr/local/bin/k3s' || true
+      ignore_errors: true
+
+    - name: Usuń katalog konfiguracyjny K3s
+      ansible.builtin.file:
+        path: /etc/rancher/k3s
+        state: absent
+
+    - name: Usuń dane K3s
+      ansible.builtin.file:
+        path: /var/lib/rancher/k3s
+        state: absent
+
+    - name: Usuń binarkę K3s
+      ansible.builtin.file:
+        path: /usr/local/bin/k3s
+        state: absent
+
+    - name: Usuń kubeconfig z katalogu root
+      ansible.builtin.file:
+        path: /root/.kube/config
+        state: absent
+
+    - name: Usuń katalog .kube jeśli pusty
+      ansible.builtin.file:
+        path: /root/.kube
+        state: absent
+
+    - name: Usuń fuse-overlayfs
+      ansible.builtin.apt:
+        name: fuse-overlayfs
+        state: absent
+        purge: yes

@@ -1,0 +1,7 @@
+---
+- name: Install Helm on the local control node
+  hosts: localhost
+  connection: local
+  become: true
+  roles:
+    - role: helm_installer

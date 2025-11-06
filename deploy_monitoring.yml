@@ -1,0 +1,8 @@
+---
+- name: Deploy Kube Prometheus Stack to the Kubernetes cluster
+  hosts: localhost
+  connection: local
+  vars:
+    kubeconfig_path: "{{ playbook_dir }}/k3s-kubeconfig"
+  roles:
+    - role: kube_monitoring_stack

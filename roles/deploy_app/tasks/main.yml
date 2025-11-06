@@ -1,0 +1,21 @@
+---
+# tasks file for deploy_app
+- name: Add Helm repository
+  ansible.builtin.command: "helm repo add {{ helm_repo_name }} {{ helm_repo_url }}"
+  changed_when: false # Dodanie repo nie jest idempotentne, więc ignorujemy zmianę
+
+- name: Update Helm repositories
+  ansible.builtin.command: "helm repo update"
+  changed_when: false
+
+- name: Create namespace if it does not exist
+  ansible.builtin.command: "kubectl --kubeconfig={{ kubeconfig_path }} create namespace {{ helm_app_namespace }}"
+  failed_when: false # Ignoruj błąd, jeśli namespace już istnieje
+  changed_when: false
+
+- name: Deploy application using Helm
+  ansible.builtin.command: >
+    helm upgrade --install {{ helm_app_name }} {{ helm_chart_name }}
+    --namespace {{ helm_app_namespace }}
+    --kubeconfig {{ kubeconfig_path }}
+  changed_when: true

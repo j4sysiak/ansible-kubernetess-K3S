@@ -1,0 +1,14 @@
+---
+# tasks file for hello_kubernetes_app
+- name: Apply the application manifests (Deployment and Service)
+  kubernetes.core.k8s:
+    state: present
+    src: "{{ role_path }}/files/deployment.yaml"
+    kubeconfig: "{{ kubeconfig_path }}"
+
+- name: Apply the Ingress manifest to expose the application
+  kubernetes.core.k8s:
+    state: present
+    src: "{{ role_path }}/files/ingress.yaml"
+    kubeconfig: "{{ kubeconfig_path }}"
+    namespace: default

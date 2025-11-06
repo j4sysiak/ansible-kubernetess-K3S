@@ -1,0 +1,7 @@
+---
+# defaults file for deploy_app
+helm_app_name: "my-ingress"
+helm_app_namespace: "ingress-nginx"
+helm_repo_name: "ingress-nginx"
+helm_repo_url: "https://kubernetes.github.io/ingress-nginx"
+helm_chart_name: "ingress-nginx/ingress-nginx"
