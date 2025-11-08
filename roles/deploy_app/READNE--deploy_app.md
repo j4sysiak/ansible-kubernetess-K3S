@@ -18,6 +18,8 @@ Deploy application
 Weryfikacja: Sprawdź, czy pody ingress-nginx znowu działają:
 # kubectl --kubeconfig=k3s-kubeconfig get pods -n ingress-nginx
  
+      status musi pokazać "Running" - czekaj aż tak będzie
+
     NAME                                                   READY   STATUS    RESTARTS   AGE
     my-ingress-ingress-nginx-controller-6b974db7d5-gblnf   1/1     Running   0          31m
 

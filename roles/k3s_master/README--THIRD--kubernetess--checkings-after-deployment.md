@@ -17,7 +17,7 @@ sprawdź klienta kubectl (lokalnie)
     kube-system   metrics-server-7b9c9c4b9c-xf65t           1/1     Running   0          106s
 
 
-2) Zalecane: skopiuj kubeconfig na host i użyj lokalnego kubectl
+2) Zalecane: skopiuj kubeconfig na localnego wsl hosta i użyj lokalnego kubectl
 # docker cp k3s-master:/etc/rancher/k3s/k3s.yaml ./k3s-kubeconfig
     Successfully copied 4.61kB to /home/jacek/dev/ansible-kubernetess-K3S/k3s-kubeconfig
 
@@ -33,14 +33,17 @@ sprawdź klienta kubectl (lokalnie)
 3a) --------------- jeśli widzisz 0.0.0.0:6443, użyj localhost:6443 w k3s-kubeconfig.
 # sed -i 's/127.0.0.1:6443/localhost:6443/' ./k3s-kubeconfig
 # export KUBECONFIG=$PWD/k3s-kubeconfig
+
+sprawdz NAMESPACE i PODy
 # kubectl get pods -A
 
     NAMESPACE     NAME                                      READY   STATUS    RESTARTS   AGE
-    kube-system   coredns-7896679cc-s9frv                   1/1     Running   0          27m
-    kube-system   local-path-provisioner-578895bd58-qxqqd   1/1     Running   0          27m
-    kube-system   metrics-server-7b9c9c4b9c-j6d2k           1/1     Running   0          27m
+    kube-system   coredns-7896679cc-q68d7                   1/1     Running   0          14m
+    kube-system   local-path-provisioner-578895bd58-4t997   1/1     Running   0          14m
+    kube-system   metrics-server-7b9c9c4b9c-8t95f           1/1     Running   0          14m
 
-3b) ---------------  Jeśli nie jest wystawiony, sprawdź IP kontenera i użyj go:
+alternatywnie:
+3b) ---------------  Jeśli nie jest wystawiony port 6443, sprawdź IP kontenera i użyj go:
 
 znajdź IP kontenera (użyj tego IP w kubeconfig)
 # docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' k3s-master
@@ -56,7 +59,7 @@ znajdź IP kontenera (użyj tego IP w kubeconfig)
 # curl -vk https://localhost:6443
 # curl -k https://localhost:6443/version
   
-   no i dupa:
+   no i dupa:  401
 {
 "kind": "Status",
 "apiVersion": "v1",
@@ -68,11 +71,17 @@ znajdź IP kontenera (użyj tego IP w kubeconfig)
 }
 
 lub jeśli masz certy z kubeconfig:
-# curl --cacert ca.crt --cert client.crt --key client.key https://localhost:6443/version
+# curl --cacert ca.crt --cert client.crt --key client.key https://localhost:6443/versionn
+    curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+    More details here: https://curl.se/docs/sslcerts.html
+
+    curl failed to verify the legitimacy of the server and therefore could not
+    establish a secure connection to it. To learn more about this situation and
+    how to fix it, please visit the web page mentioned above.
 
  ------   poprawa ------
 
-5) sprawdź węzły i status klastra
+5) sprawdź węzły (NODES) i status klastra
 # kubectl get nodes
     NAME         STATUS   ROLES           AGE   VERSION
     k3s-master   Ready    control-plane   10m   v1.34.1+k3s1
@@ -87,6 +96,11 @@ lub jeśli masz certy z kubeconfig:
 6) sprawdź zdarzenia i opis dla namespace kube-system
 # kubectl get events -A --sort-by='.metadata.creationTimestamp'
 # kubectl -n kube-system describe pod <POD_NAME>
+examples: mamy 3 pody w kube-system
+# kubectl -n kube-system describe pod coredns-7896679cc-s9frv
+# kubectl -n kube-system describe pod local-path-provisioner-578895bd58-4t997
+# kubectl -n kube-system describe pod metrics-server-7b9c9c4b9c-8t95f
+
 
 7) podejrzyj logi problematycznych podów (wszystkie kontenery)
 # kubectl logs -n <NAMESPACE> <POD_NAME> --all-containers
@@ -98,8 +112,8 @@ lub jeśli masz certy z kubeconfig:
     kube-system   kube-dns         ClusterIP   10.43.0.10    <none>        53/UDP,53/TCP,9153/TCP   12m
     kube-system   metrics-server   ClusterIP   10.43.254.7   <none>        443/TCP                  12m
 
-# kubectl describe svc my-ingress-ingress-nginx-controller -n ingress-nginx
-    Error from server (NotFound): namespaces "ingress-nginx" not found
+# kubectl describe svc my-ingress-ingress-nginx-controller -n kube-system
+    Error from server (NotFound): services "my-ingress-ingress-nginx-controller" not found
 
 9) Wyodrębnij i zdekoduj certy z kubeconfig używając lokalnego kubectl
 # kubectl --kubeconfig=./k3s-kubeconfig config view --raw -o jsonpath='{.clusters[0].cluster.certificate-authority-data}' | base64 -d > ca.crt

@@ -76,6 +76,7 @@ Edytuj plik C:\Windows\System32\drivers\etc\hosts jako administrator i dodaj lin
 Poczekaj chwilę po zakończeniu playbooka (około 15-30 sekund), 
 aż Ingress Controller wczyta nową konfigurację.
 
+trzeba trochę cierpliwości za pierwszym razem ... około 10 min - poszedlem do Lidla i jak wróciłem to dzialala strona. 
 Otwórz przeglądarkę i wejdź na http://grafana.local:8081
 Zaloguj się (użytkownik: admin, hasło: prom-operator) i zobacz gotowe dashboardy monitorujące Twój klaster.
 

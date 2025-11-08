@@ -1,13 +1,15 @@
 Wykorzystamy całą infrastrukturę, którą zbudowaliśmy (k3s + ingress-nginx), aby wdrożyć i publicznie udostępnić 
 prostą aplikację.
 
-Nasz Plan: Wdrożenie i Udostępnienie Aplikacji "Hello Kubernetes"
+Nasz Plan: Wdrożenie i Udostępnienie Aplikacji "Hello Kubernetes" 
+       - to jest taka stronka, ktora bedzie dostepna pod urlem: http://localhost:8081
 
 Zrobimy to w dwóch etapach, używając Ansible do zarządzania wszystkim:
 
 # Etap 1: Wdrożenie Aplikacji w Klastrze
 Utworzenie roli: hello_kubernetes_app
-Celem tej roli będzie wdrożenie aplikacji "Hello Kubernetes" i udostępnienie jej za pomocą zasobu Ingress.
+Celem tej roli będzie wdrożenie aplikacji "Hello Kubernetes" i udostępnienie jej za pomocą zasobu Ingress 
+                               (Udostępnienie Aplikacji na Zewnątrz).
  
 # Etap 2: Udostępnienie Aplikacji na Zewnątrz
 Przygotuj Manifesty Aplikacji

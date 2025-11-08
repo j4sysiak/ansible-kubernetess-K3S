@@ -69,26 +69,26 @@ Sprawdź DNS
     185.199.108.153
 
 # nslookup kubernetes.github.io
-Server:         10.255.255.254
-Address:        10.255.255.254#53
+    Server:         10.255.255.254
+    Address:        10.255.255.254#53
 
-Non-authoritative answer:
-Name:   kubernetes.github.io
-Address: 185.199.108.153
-Name:   kubernetes.github.io
-Address: 185.199.111.153
-Name:   kubernetes.github.io
-Address: 185.199.109.153
-Name:   kubernetes.github.io
-Address: 185.199.110.153
-Name:   kubernetes.github.io
-Address: 2606:50c0:8000::153
-Name:   kubernetes.github.io
-Address: 2606:50c0:8001::153
-Name:   kubernetes.github.io
-Address: 2606:50c0:8002::153
-Name:   kubernetes.github.io
-Address: 2606:50c0:8003::153
+    Non-authoritative answer:
+    Name:   kubernetes.github.io
+    Address: 185.199.108.153
+    Name:   kubernetes.github.io
+    Address: 185.199.111.153
+    Name:   kubernetes.github.io
+    Address: 185.199.109.153
+    Name:   kubernetes.github.io
+    Address: 185.199.110.153
+    Name:   kubernetes.github.io
+    Address: 2606:50c0:8000::153
+    Name:   kubernetes.github.io
+    Address: 2606:50c0:8001::153
+    Name:   kubernetes.github.io
+    Address: 2606:50c0:8002::153
+    Name:   kubernetes.github.io
+    Address: 2606:50c0:8003::153
 
 Sprawdź TCP/TLS do hosta (podaj IP z dig/nslookup jeśli trzeba)
 # openssl s_client -connect kubernetes.github.io:443 -servername kubernetes.github.io
