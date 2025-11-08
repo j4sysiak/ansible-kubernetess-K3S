@@ -17,7 +17,7 @@ GO TO --> README--THIRD--kubernetess--checkings-after-deployment.md
 GO TO --> roles/helm_installer/README--install_helm.md
 
 # Step.5
-GO TO --> roles/deploy_app/READNE--deploy_app.md
+GO TO --> roles/deploy_app/README--deploy_app.md
 
 # Step.6
 GO TO --> roles/hello_kubernetes_app/README--hello_kubernetes_app.md

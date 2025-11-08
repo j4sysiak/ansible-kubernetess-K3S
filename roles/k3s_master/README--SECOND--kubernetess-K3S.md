@@ -64,8 +64,9 @@ To jest kompromis, na który poszliśmy, wybierając tę niezawodną metodę utr
 
 
 *****************************************************************************
-*******************  wykorzystanie  *************************************
+***********************  wykorzystanie  *************************************
 *****************************************************************************
+
 Krótko i na temat:
 Co robimy tutaj (1) Uruchamiasz lekki klaster Kubernetes (k3s) lokalnie.
 
@@ -86,7 +87,7 @@ Co widzisz w swoim środowisku i konsekwencje (1) Serwis kontrolera ma EXTERNAL\
                  czyli kontroler jest dostępny tylko z hosta (albo innych kontenerów).
 
 (2) Na bare-metal potrzebny MetalLB, żeby otrzymać realny publiczny adres LoadBalancer. 
-Bez tego używasz: wpisu w \/etc/hosts`, port-forwardalboNodePort. (3) Helm/kubectl muszą używać--kubeconfig=k3s-kubeconfig albo zmiennej środowiskowej KUBECONFIG`, 
+Bez tego używasz: wpisu w \/etc/hosts`, port-forward albo NodePort. (3) Helm/kubectl muszą używać--kubeconfig=k3s-kubeconfig albo zmiennej środowiskowej KUBECONFIG`, 
          jeśli polecenia mają działać przeciwko twojemu k3s.
 
  
