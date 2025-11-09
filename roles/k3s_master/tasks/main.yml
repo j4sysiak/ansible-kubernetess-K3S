@@ -131,3 +131,45 @@
 - name: Display a message about the kubeconfig
   ansible.builtin.debug:
     msg: "Kubeconfig for your cluster has been saved to {{ playbook_dir }}/k3s-kubeconfig. You can now use 'kubectl --kubeconfig=k3s-kubeconfig get nodes'"
+
+
+
+# install ingress-nginx
+
+- name: Poczekaj na gotowość API Kubernetes
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: 6443
+    timeout: 120
+
+- name: Zainstaluj Ingress NGINX Controller
+  ansible.builtin.shell: |
+    /usr/local/bin/k3s kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/baremetal/deploy.yaml
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: ingress_install
+  failed_when: ingress_install.rc != 0
+  changed_when: "'created' in ingress_install.stdout or 'configured' in ingress_install.stdout"
+
+- name: Poczekaj na gotowość Ingress Controller
+  ansible.builtin.shell: |
+    /usr/local/bin/k3s kubectl wait --namespace ingress-nginx \
+      --for=condition=ready pod \
+      --selector=app.kubernetes.io/component=controller \
+      --timeout=300s
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: ingress_ready
+  failed_when: ingress_ready.rc != 0
+
+- name: Wyświetl status Ingress Controller
+  ansible.builtin.shell: |
+    /usr/local/bin/k3s kubectl get svc -n ingress-nginx
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: ingress_status
+  changed_when: false
+
+- name: Pokaż usługi Ingress
+  ansible.builtin.debug:
+    var: ingress_status.stdout_lines
