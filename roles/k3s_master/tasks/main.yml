@@ -133,7 +133,6 @@
     msg: "Kubeconfig for your cluster has been saved to {{ playbook_dir }}/k3s-kubeconfig. You can now use 'kubectl --kubeconfig=k3s-kubeconfig get nodes'"
 
 
-
 # install ingress-nginx
 
 - name: Poczekaj na gotowość API Kubernetes
@@ -150,6 +149,21 @@
   register: ingress_install
   failed_when: ingress_install.rc != 0
   changed_when: "'created' in ingress_install.stdout or 'configured' in ingress_install.stdout"
+
+- name: Poczekaj 30 sekund na utworzenie namespace i deployment
+  ansible.builtin.pause:
+    seconds: 30
+
+- name: Sprawdź, czy pody Ingress Controller istnieją
+  ansible.builtin.shell: |
+    /usr/local/bin/k3s kubectl get pods -n ingress-nginx --selector=app.kubernetes.io/component=controller --no-headers 2>/dev/null | wc -l
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: ingress_pod_count
+  retries: 12
+  delay: 10
+  until: ingress_pod_count.stdout | int > 0
+  changed_when: false
 
 - name: Poczekaj na gotowość Ingress Controller
   ansible.builtin.shell: |

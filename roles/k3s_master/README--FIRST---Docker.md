@@ -21,9 +21,10 @@ docker run -d \
 --hostname k3s-master \
 --privileged -v /dev:/dev \
 --cgroupns=host \
--p 6443:6443 \
--p 8081:80 \
--p 2222:22 \
+  -p 2222:22 \
+  -p 80:80 \
+  -p 443:443 \
+  -p 6443:6443 \
 k3s-master-image
 ```
 
