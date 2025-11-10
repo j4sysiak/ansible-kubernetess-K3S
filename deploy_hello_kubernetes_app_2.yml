@@ -1,0 +1,9 @@
+# yaml
+# File: deploy_hello_kubernetes_app_2.yml
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    kubeconfig: "{{ playbook_dir }}/k3s-kubeconfig"
+  roles:
+    - role: hello_kubernetes_app_2
