@@ -1,0 +1,48 @@
+# yaml
+- name: Apply hello-world manifest
+  command: kubectl --kubeconfig={{ playbook_dir }}/k3s-kubeconfig apply -f {{ playbook_dir }}/roles/hello_world/files/simple-app.yaml
+
+- name: Wait for deployment rollout
+  command: kubectl --kubeconfig={{ playbook_dir }}/k3s-kubeconfig -n hello-world rollout status deployment/hello-world --timeout=60s
+  register: rollout
+
+- name: Show pods in hello-world
+  command: kubectl --kubeconfig={{ playbook_dir }}/k3s-kubeconfig -n hello-world get pods -o wide
+  register: pods
+
+- name: Show service and external access
+  command: kubectl --kubeconfig={{ playbook_dir }}/k3s-kubeconfig -n hello-world get svc hello-world -o wide
+  register: svc
+
+- name: Print quick info
+  debug:
+    msg:
+      - "{{ pods.stdout_lines }}"
+      - "{{ svc.stdout_lines }}"
+
+
+
+# yaml
+- name: Get service nodePort
+  command: kubectl --kubeconfig={{ playbook_dir }}/k3s-kubeconfig -n hello-world get svc hello-world -o jsonpath="{.spec.ports[0].nodePort}"
+  register: nodeport
+  changed_when: false
+
+- name: Get node internal IP (first node)
+  command: kubectl --kubeconfig={{ playbook_dir }}/k3s-kubeconfig get nodes -o jsonpath="{.items[0].status.addresses[?(@.type=='InternalIP')].address}"
+  register: nodeip
+  changed_when: false
+
+- name: Show access URL
+  debug:
+    msg: "Aplikacja dostępna pod: http://{{ nodeip.stdout }}:{{ nodeport.stdout }}  (test: curl -sS http://{{ nodeip.stdout }}:{{ nodeport.stdout }}/ | head -n 10)"
+
+- name: Test HTTP access (opcjonalne, nie powoduje błędu gdy nieosiągalne)
+  command: curl -sS --max-time 5 http://{{ nodeip.stdout }}:{{ nodeport.stdout }}/
+  register: curl_out
+  failed_when: false
+  changed_when: false
+
+- name: Show curl result (opcjonalne)
+  debug:
+    var: curl_out.stdout_lines

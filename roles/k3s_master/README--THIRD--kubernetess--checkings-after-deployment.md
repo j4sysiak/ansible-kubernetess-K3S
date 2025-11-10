@@ -12,15 +12,17 @@ sprawdź klienta kubectl (lokalnie)
    Czemu to ważne? Potwierdzasz, że k3s działa wewnątrz kontenera.
 # docker exec -it k3s-master bash -c 'command -v k3s >/dev/null && k3s kubectl --kubeconfig=/etc/rancher/k3s/k3s.yaml get pods -A || echo "k3s binary not found"'
 
-    NAMESPACE     NAME                                      READY   STATUS    RESTARTS   AGE
-    kube-system   coredns-7896679cc-dvxqk                   1/1     Running   0          106s
-    kube-system   local-path-provisioner-578895bd58-pb5fr   1/1     Running   0          106s
-    kube-system   metrics-server-7b9c9c4b9c-xf65t           1/1     Running   0          106s
+    NAMESPACE       NAME                                       READY   STATUS    RESTARTS   AGE
+    ingress-nginx   ingress-nginx-controller-565c7596d-swhj5   1/1     Running   0          9m31s
+    kube-system     coredns-7896679cc-8tk9c                    1/1     Running   0          9m31s
+    kube-system     local-path-provisioner-578895bd58-kthsk    1/1     Running   0          9m31s
+    kube-system     metrics-server-7b9c9c4b9c-kqs8m            1/1     Running   0          9m31s
 
 opis:
-coredns — serwer DNS dla klastra
-local-path-provisioner — zapewnia dynamiczne wolumeny (PersistentVolumes)
-metrics-server — zbiera metryki zużycia CPU/RAM
+ingress-nginx/ingress-nginx-controller-... — Ingress Controller (odpowiada za routing HTTP/HTTPS do usług). 1/1 Running 0 oznacza, że kontroler jest uruchomiony i zdrowy.
+kube-system/coredns-... — DNS klastra (rozwiązywanie nazw usług/podów). 1/1 Running 0 = działa poprawnie.
+kube-system/local-path-provisioner-... — dostawca wolumenów lokalnych (dynamiczne PV). 1/1 Running 0 = działa.
+kube-system/metrics-server-... — zbiera metryki CPU/RAM dla klastra. 1/1 Running 0 = działa.
 
 2) Zalecane: skopiuj kubeconfig na localnego wsl hosta i użyj lokalnego kubectl
    Czemu to ważne? Teraz kubectl na hoście może łączyć się z k3s działającym w kontenerze.
@@ -48,7 +50,7 @@ metrics-server — zbiera metryki zużycia CPU/RAM
 Zastąpiłeś 127.0.0.1:6443 → localhost:6443 w pliku kubeconfig (choć to to samo, ale czasem localhost działa lepiej).
 Ustawiłeś zmienną KUBECONFIG, żeby kubectl automatycznie używał tego pliku.
 
-sprawdz NAMESPACE i PODy  (Wynik: Te same 3 pody — teraz widzisz je z lokalnego hosta, używając kubectl na WSL.)
+sprawdz NAMESPACE i PODy  (Wynik: Te same 4 pody — ale teraz widzisz je z lokalnego hosta, używając kubectl na WSL.)
 # kubectl get pods -A
 
     NAMESPACE     NAME                                      READY   STATUS    RESTARTS   AGE
@@ -66,6 +68,8 @@ znajdź IP kontenera (użyj tego IP w kubeconfig)
 # sed -i 's/127.0.0.1:6443/172.17.0.2:6443/' ./k3s-kubeconfig
 # export KUBECONFIG=$PWD/k3s-kubeconfig
 # kubectl get pods -A
+
+
 
 
 
@@ -142,15 +146,44 @@ examples: mamy 3 pody w kube-system
 
 8) sprawdź services (usługi) i endpointy (np. kontroler ingress)
 # kubectl get svc -A
-    NAMESPACE     NAME             TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                  AGE
-    default       kubernetes       ClusterIP   10.43.0.1     <none>        443/TCP                  12m
-    kube-system   kube-dns         ClusterIP   10.43.0.10    <none>        53/UDP,53/TCP,9153/TCP   12m
-    kube-system   metrics-server   ClusterIP   10.43.254.7   <none>        443/TCP                  12m
+    NAMESPACE       NAME                                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+    default         kubernetes                           ClusterIP   10.43.0.1       <none>        443/TCP                      36m
+    ingress-nginx   ingress-nginx-controller             NodePort    10.43.149.107   <none>        80:30104/TCP,443:32352/TCP   36m
+    ingress-nginx   ingress-nginx-controller-admission   ClusterIP   10.43.40.61     <none>        443/TCP                      36m
+    kube-system     kube-dns                             ClusterIP   10.43.0.10      <none>        53/UDP,53/TCP,9153/TCP       36m
+    kube-system     metrics-server                       ClusterIP   10.43.32.117    <none>        443/TCP                      36m
 
-kubernetes — API serwer (ClusterIP 10.43.0.1).
-kube-dns — DNS dla podów (port 53).
-metrics-server — metryki CPU/RAM.
-Czemu to ważne? Podstawowe usługi systemowe działają.
+Krótko o kolumnach: 
+NAMESPACE (przestrzeń nazw), 
+NAME (nazwa serwisu), 
+TYPE (typ expose), 
+CLUSTER-IP (wewnętrzny adres), 
+EXTERNAL-IP (adres zewn.), 
+PORT(S) (porty usługi :nodePort), 
+AGE (wiek).
+
+Opis serwisów:
+default/kubernetes — ClusterIP 10.43.0.1 port 443
+To wewnętrzny serwis API serwera Kubernetesa. Dostępny tylko z wnętrza klastra (pods, kontrolery) lub przez kubeconfig/tunel.
+
+ingress-nginx/ingress-nginx-controller — NodePort 10.43.149.107 porty 80:30104/TCP, 443:32352/TCP
+Główny Ingress Controller. 
+Usługa przekierowuje ruch HTTP/HTTPS do odpowiednich Ingressów. 
+Brak EXTERNAL-IP oznacza, że nie ma LoadBalancer\‑a — ruch z zewnątrz można kierować na dowolny nodeIP:30104 (HTTP) lub nodeIP:32352 (HTTPS).
+
+ingress-nginx/ingress-nginx-controller-admission — ClusterIP 10.43.40.61 port 443
+Webhook/admission service używany przez kontroler ingress do walidacji/zarządzania certyfikatami. Tylko wewnętrzne użycie.
+
+kube-system/kube-dns — ClusterIP 10.43.0.10 porty 53/UDP, 53/TCP, 9153/TCP
+CoreDNS — rozwiązywanie nazw w klastrze (usługi/pody). Port 9153 to endpoint metryk/dla debugu.
+
+kube-system/metrics-server — ClusterIP 10.43.32.117 port 443
+Zbiera metryki CPU/Memory dla HPA i kubectl top. Tylko dostęp wewnątrz klastra.
+
+Uwagi praktyczne:
+ClusterIP są dostępne tylko wewnątrz klastra; 
+aby dostać się z zewnątrz, użyj NodePort, LoadBalancer lub port‑forwarding.
+Brak EXTERNAL-IP nie oznacza błędu — po prostu brak zewnętrznego LB.
 
 
 Próba sprawdzenia Ingress Controller
@@ -179,8 +212,17 @@ ca.crt — certyfikat CA (Certificate Authority) — weryfikuje tożsamość ser
 client.crt — certyfikat klienta — Twoja tożsamość.
 client.key — klucz prywatny klienta — używany do podpisywania żądań.
 Czemu to ważne? Te 3 pliki pozwalają Ci bezpośrednio uwierzytelnić się w API (np. przez curl).
- 
-10) Test uwierzytelnionego zapytania do API
+
+10)
+Test uwierzytelnionego zapytania do API - tj. test połączenia i TLS:
+
+ - użyj kubectl z kubeconfig
+# kubectl --kubeconfig=./k3s-kubeconfig version
+    Client Version: v1.34.1
+    Kustomize Version: v5.7.1
+    Server Version: v1.34.1+k3s1
+
+ - curl z certyfikatem klienta
 # curl --cacert ca.crt --cert client.crt --key client.key https://127.0.0.1:6443/version
     {
     "major": "1",
@@ -207,7 +249,9 @@ Co zrobiłeś:
 Wysłałeś zapytanie do endpoint /version API z poprawnym uwierzytelnieniem.
 API rozpoznało Cię jako zaufanego klienta i zwróciło wersję k3s.
 Czemu to ważne? Sukces — TLS + uwierzytelnienie klienta działają poprawnie!
- 
+
+
+
 
 
 Dodatkowe sprawdzenia wersji:
@@ -233,3 +277,33 @@ Dodatkowe sprawdzenia wersji:
 
 # kubectl --kubeconfig=./k3s-kubeconfig version -o json | jq -r '.serverVersion.gitVersion'
 v1.34.1+k3s1
+
+
+-----------------------  podsumowanie  -----------------------
+Przeprowadziłeś kompleksową diagnostykę klastra k3s działającego w kontenerze Docker.
+Sprawdziłeś stan podów, usług, węzłów oraz komponentów klastra.
+Zweryfikowałeś działanie TLS i uwierzytelnianie klienta za pomocą certyfikatów wyodrębnionych z kubeconfig.
+Wszystkie kluczowe elementy klastra działają poprawnie, a zapytania do API są uwierzytelniane.
+Masz teraz solidną podstawę do dalszej pracy z Kubernetes i wdrażania aplikacji w klastrze k3s. 
+////////////////////////////////////////////////////////////////////////////////
+
+Stan aktualny (rola k3s_master uruchomiona) — zwięzłe podsumowanie:
+K3s master działa (kontener/instancja uruchomiona zgodnie z rolą roles/k3s_master).
+Wersja serwera: v1.34.1+k3s1 (potwierdzone przez GET /version z certyfikatem klienta).
+Podstawowe komponenty klastra uruchomione i zdrowe (kubectl get pods -A):
+ingress-nginx — Ingress Controller (1/1 Running).
+kube-system/coredns — DNS klastra (1/1 Running).
+kube-system/local-path-provisioner — provisioner wolumenów lokalnych (1/1 Running).
+kube-system/metrics-server — zbieranie metryk (1/1 Running).
+Serwisy (kubectl get svc -A):
+default/kubernetes — ClusterIP 10.43.0.1:443 (wewnętrzny API server).
+ingress-nginx/ingress-nginx-controller — NodePort 10.43.149.107 z mapowaniem 80:30104/TCP, 443:32352/TCP — dostęp do Ingress z zewnątrz przez NODE_IP:30104 (HTTP) i NODE_IP:32352 (HTTPS).
+ingress-nginx-controller-admission — ClusterIP webhook (wewnętrzny).
+kube-dns — ClusterIP 10.43.0.10 (DNS; porty 53 UDP/TCP, 9153 metryki).
+metrics-server — ClusterIP (wewnętrzny).
+Dostęp do API:
+API na porcie 6443 wymaga uwierzytelnienia (client cert / token). curl --cacert ca.crt --cert client.crt --key client.key https://localhost:6443/version działa — kubeconfig znajduje się standardowo w /etc/rancher/k3s/k3s.yaml (lub lokalny kubeconfig używany wcześniej).
+Środowisko deweloperskie / repozytorium:
+Praca w ~/dev/ansible-kubernetess-K3S, aktywowane ansible-venv.
+README wskazuje kolejne role/etapy do uruchomienia (helm, deploy aplikacji, monitoring).
+Krótko: podstawowy klaster K3s jest uruchomiony i zdrowy — DNS, ingress, storage i metrics działają; API jest zabezpieczone i dostępne po uwierzytelnieniu.
