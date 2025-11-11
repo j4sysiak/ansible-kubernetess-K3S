@@ -17,7 +17,7 @@
 - name: Print quick info
   debug:
     msg:
-      - "{{ pods.stdout_lines }}"
+#      - "{{ pods.stdout_lines }}"
       - "{{ svc.stdout_lines }}"
 
 
