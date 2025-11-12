@@ -2,7 +2,9 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: dhcp-server
-  namespace: {{ dhcp_namespace }}
+  namespace: "{{ dhcp_namespace }}"
+  labels:
+    app: dhcp-server
 spec:
   selector:
     matchLabels:
@@ -13,25 +15,37 @@ spec:
         app: dhcp-server
     spec:
       hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       tolerations:
-        - operator: "Exists"
+      - operator: "Exists"
+      initContainers:
+      - name: init-leases
+        image: busybox:1.36
+        command: ["sh","-c","touch /data/dhcpd.leases && chmod 644 /data/dhcpd.leases"]
+        volumeMounts:
+        - name: dhcp-data
+          mountPath: /data
       containers:
-        - name: dhcpd
-          image: {{ dhcp_image }}
-          imagePullPolicy: IfNotPresent
-          securityContext:
-            privileged: true
-          volumeMounts:
-            - name: dhcpd-conf
-              mountPath: /etc/dhcp/dhcpd.conf
-              subPath: dhcpd.conf
-          args:
-            - "-f"    # foreground (może zależeć od obrazu)
-          ports:
-            - containerPort: 67
-              hostPort: 67
-              protocol: UDP
+      - name: isc-dhcp
+        image: "{{ dhcp_image }}"
+        securityContext:
+          privileged: true
+        env:
+        - name: INTERFACES
+          value: "{{ dhcp_interface }}"
+        ports:
+        - containerPort: 67
+          hostPort: 67
+          protocol: UDP
+        volumeMounts:
+        - name: dhcp-data
+          mountPath: /data
+        - name: dhcp-config
+          mountPath: /data/dhcpd.conf
+          subPath: dhcpd.conf
       volumes:
-        - name: dhcpd-conf
-          configMap:
-            name: dhcpd-config
+      - name: dhcp-data
+        emptyDir: {}
+      - name: dhcp-config
+        configMap:
+          name: dhcpd-config

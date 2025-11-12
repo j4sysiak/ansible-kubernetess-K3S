@@ -1,0 +1,4 @@
+---
+- hosts: localhost
+  roles:
+    - dhcp_server
