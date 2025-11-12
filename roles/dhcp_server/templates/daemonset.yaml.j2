@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dhcp-server
+  namespace: {{ dhcp_namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: dhcp-server
+  template:
+    metadata:
+      labels:
+        app: dhcp-server
+    spec:
+      hostNetwork: true
+      tolerations:
+        - operator: "Exists"
+      containers:
+        - name: dhcpd
+          image: {{ dhcp_image }}
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: dhcpd-conf
+              mountPath: /etc/dhcp/dhcpd.conf
+              subPath: dhcpd.conf
+          args:
+            - "-f"    # foreground (może zależeć od obrazu)
+          ports:
+            - containerPort: 67
+              hostPort: 67
+              protocol: UDP
+      volumes:
+        - name: dhcpd-conf
+          configMap:
+            name: dhcpd-config

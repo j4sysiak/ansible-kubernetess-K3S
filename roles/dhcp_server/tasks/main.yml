@@ -1,0 +1,38 @@
+---
+- name: Upewnij się, że namespace istnieje
+  ansible.builtin.command:
+    cmd: >
+      kubectl --kubeconfig={{ kubeconfig }} apply -f -
+  args:
+    stdin: |
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: {{ dhcp_namespace }}
+
+- name: Renderuj dhcpd.conf do tymczasowego pliku
+  ansible.builtin.template:
+    src: dhcpd.conf.j2
+    dest: /tmp/dhcpd.conf
+    mode: '0644'
+
+- name: Utwórz/aktualizuj ConfigMap z dhcpd.conf
+  ansible.builtin.command:
+    cmd: >
+      kubectl --kubeconfig={{ kubeconfig }} -n {{ dhcp_namespace }}
+      create configmap dhcpd-config --from-file=dhcpd.conf=/tmp/dhcpd.conf
+      --dry-run=client -o yaml | kubectl --kubeconfig={{ kubeconfig }} apply -f -
+  register: cm_apply
+  changed_when: "'configured' in cm_apply.stdout or cm_apply.rc == 0"
+
+- name: Renderuj DaemonSet manifest
+  ansible.builtin.template:
+    src: daemonset.yaml.j2
+    dest: /tmp/dhcpd-daemonset.yaml
+    mode: '0644'
+
+- name: Zastosuj DaemonSet
+  ansible.builtin.command:
+    cmd: kubectl --kubeconfig={{ kubeconfig }} apply -f /tmp/dhcpd-daemonset.yaml
+  register: ds_apply
+  changed_when: ds_apply.rc == 0

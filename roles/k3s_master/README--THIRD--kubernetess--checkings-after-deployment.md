@@ -10,13 +10,24 @@ sprawdź klienta kubectl (lokalnie)
 
 1) Sprawdź i użyj wbudowanego k3s kubectl (jeśli jest)
    Czemu to ważne? Potwierdzasz, że k3s działa wewnątrz kontenera.
+
+jeżeli zrestartowałeś kontener, uruchom kubectl k3s wewnątrz kontenera:
+# docker exec -it k3s-master
+    nohup /usr/local/bin/k3s server --write-kubeconfig-mode 644 > /var/log/k3s.log 2>&1 &
+    (trzeba poczekać minutę lub dwie na pełne uruchomienie k3s)
+    exit
+a to umozliwi użycie k3s kubectl poza dockerowym kontenerem, czyli na local hoście.
+# export KUBECONFIG=$PWD/k3s-kubeconfig
+sprawdź pody w klastrze k3s:
 # docker exec -it k3s-master bash -c 'command -v k3s >/dev/null && k3s kubectl --kubeconfig=/etc/rancher/k3s/k3s.yaml get pods -A || echo "k3s binary not found"'
 
-    NAMESPACE       NAME                                       READY   STATUS    RESTARTS   AGE
-    ingress-nginx   ingress-nginx-controller-565c7596d-swhj5   1/1     Running   0          9m31s
-    kube-system     coredns-7896679cc-8tk9c                    1/1     Running   0          9m31s
-    kube-system     local-path-provisioner-578895bd58-kthsk    1/1     Running   0          9m31s
-    kube-system     metrics-server-7b9c9c4b9c-kqs8m            1/1     Running   0          9m31s
+    NAMESPACE          NAME                                       READY   STATUS    RESTARTS        AGE
+    hello-kubernetes   hello-kubernetes-app-2-84d5b6c48b-zw8cf    1/1     Running   1 (3m49s ago)   46h
+    hello-world        hello-world-7f86d974d5-2qfp2               1/1     Running   1 (3m49s ago)   47h
+    ingress-nginx      ingress-nginx-controller-565c7596d-swhj5   1/1     Running   1 (3m49s ago)   2d
+    kube-system        coredns-7896679cc-8tk9c                    1/1     Running   1 (3m49s ago)   2d
+    kube-system        local-path-provisioner-578895bd58-kthsk    1/1     Running   1 (3m49s ago)   2d
+    kube-system        metrics-server-7b9c9c4b9c-kqs8m            1/1     Running   1 (3m49s ago)   2d
 
 opis:
 ingress-nginx/ingress-nginx-controller-... — Ingress Controller (odpowiada za routing HTTP/HTTPS do usług). 1/1 Running 0 oznacza, że kontroler jest uruchomiony i zdrowy.
@@ -53,10 +64,13 @@ Ustawiłeś zmienną KUBECONFIG, żeby kubectl automatycznie używał tego pliku
 sprawdz NAMESPACE i PODy  (Wynik: Te same 4 pody — ale teraz widzisz je z lokalnego hosta, używając kubectl na WSL.)
 # kubectl get pods -A
 
-    NAMESPACE     NAME                                      READY   STATUS    RESTARTS   AGE
-    kube-system   coredns-7896679cc-q68d7                   1/1     Running   0          14m
-    kube-system   local-path-provisioner-578895bd58-4t997   1/1     Running   0          14m
-    kube-system   metrics-server-7b9c9c4b9c-8t95f           1/1     Running   0          14m
+    NAMESPACE          NAME                                       READY   STATUS    RESTARTS      AGE
+    hello-kubernetes   hello-kubernetes-app-2-84d5b6c48b-zw8cf    1/1     Running   1 (15m ago)   46h
+    hello-world        hello-world-7f86d974d5-2qfp2               1/1     Running   1 (15m ago)   47h
+    ingress-nginx      ingress-nginx-controller-565c7596d-swhj5   1/1     Running   1 (15m ago)   2d
+    kube-system        coredns-7896679cc-8tk9c                    1/1     Running   1 (15m ago)   2d
+    kube-system        local-path-provisioner-578895bd58-kthsk    1/1     Running   1 (15m ago)   2d
+    kube-system        metrics-server-7b9c9c4b9c-kqs8m            1/1     Running   1 (15m ago)   2d
 
 alternatywnie:
 3b) ---------------  Jeśli nie jest wystawiony port 6443, sprawdź IP kontenera i użyj go:
@@ -120,7 +134,7 @@ Status Ready — węzeł jest zdrowy i gotowy do uruchamiania podów.
 
 Sprawdzenie komponentów klastra
 # kubectl get cs || true
-    Warning: v1 ComponentStatus is deprecated in v1.19+
+ 
     NAME                 STATUS    MESSAGE   ERROR
     etcd-0               Healthy   ok
     controller-manager   Healthy   ok
@@ -146,12 +160,15 @@ examples: mamy 3 pody w kube-system
 
 8) sprawdź services (usługi) i endpointy (np. kontroler ingress)
 # kubectl get svc -A
-    NAMESPACE       NAME                                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
-    default         kubernetes                           ClusterIP   10.43.0.1       <none>        443/TCP                      36m
-    ingress-nginx   ingress-nginx-controller             NodePort    10.43.149.107   <none>        80:30104/TCP,443:32352/TCP   36m
-    ingress-nginx   ingress-nginx-controller-admission   ClusterIP   10.43.40.61     <none>        443/TCP                      36m
-    kube-system     kube-dns                             ClusterIP   10.43.0.10      <none>        53/UDP,53/TCP,9153/TCP       36m
-    kube-system     metrics-server                       ClusterIP   10.43.32.117    <none>        443/TCP                      36m
+
+    NAMESPACE          NAME                                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+    default            kubernetes                           ClusterIP   10.43.0.1       <none>        443/TCP                      2d
+    hello-kubernetes   hello-kubernetes-app-2               NodePort    10.43.109.110   <none>        80:30082/TCP                 46h
+    hello-world        hello-world                          ClusterIP   10.43.158.198   <none>        80/TCP                       47h
+    ingress-nginx      ingress-nginx-controller             NodePort    10.43.149.107   <none>        80:30104/TCP,443:32352/TCP   2d
+    ingress-nginx      ingress-nginx-controller-admission   ClusterIP   10.43.40.61     <none>        443/TCP                      2d
+    kube-system        kube-dns                             ClusterIP   10.43.0.10      <none>        53/UDP,53/TCP,9153/TCP       2d
+    kube-system        metrics-server                       ClusterIP   10.43.32.117    <none>        443/TCP                      2d
 
 Krótko o kolumnach: 
 NAMESPACE (przestrzeń nazw), 

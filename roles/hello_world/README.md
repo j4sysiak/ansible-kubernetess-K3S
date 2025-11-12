@@ -1,3 +1,31 @@
+Opis, co my tu robimy:
+----------------------
+Rola hello_world wykonuje proste wdrożenie aplikacji i wystawienie jej w klastrze — krótko:
+Tworzy (lub zapewnia) namespace hello-world.
+Aplikuje manifesty: Deployment (prosty serwer, readinessProbe, zasoby) i Service typu NodePort (eksponuje aplikację poza klastrem).
+Czeka na rollout Deploymentu (zadanie typu Wait for deployment rollout).
+Zawiera instrukcje debugowania i obejścia problemów z dostępem do NodePort (np. kubectl port-forward).
+
+Szybkie komendy debugowe (użyj swojego kubeconfig):
+# kubectl --kubeconfig=./k3s-kubeconfig -n hello-world get pods -o wide
+# kubectl --kubeconfig=./k3s-kubeconfig -n hello-world describe deployment hello-world
+# kubectl --kubeconfig=./k3s-kubeconfig -n hello-world get events --sort-by=.metadata.creationTimestamp
+# kubectl --kubeconfig=./k3s-kubeconfig -n hello-world logs <pod-name> -c <container-name>
+
+Port‑forward (szybkie obejście): 
+# kubectl --kubeconfig=./k3s-kubeconfig -n hello-world port-forward svc/hello-world 8080:80 &
+
+teraz mozna odpalić w przeglądarce lub curl:
+# curl -v http://localhost:8080/ | head -n 10
+# http://localhost:8080/         powinna sie pojawić stronka ---->   "Welcome to nginx!"
+
+
+Typowe problemy:
+NodePort niedostępny, gdy k3s działa w kontenerze — rozwiązania: kubectl port-forward, uruchomić k3s z --net=host lub zainstalować MetalLB.
+Niezgodne nazwy/labelki lub błędy readinessProbe powodują, że rollout nie dochodzi do stanu Ready — sprawdź describe i logs.
+
+
+////////////////////////////////// rozwiązanie problemu /////////////////////////////////////
 Najprawdopodobniej NodePort nie jest osiągalny z Twojego hosta (adres 172.17.0.2 to IP w wewnętrznej sieci kontenera/klastra). 
 Szybkie kroki debugowe i obejścia:
 Sprawdź jakie adresy mają węzły i czy nodePort jest poprawny.
@@ -28,12 +56,11 @@ docker ps | grep k3s
 
 
 
-to pomoglo (port-forward):
+---> to pomoglo (port-forward):
 # szybkie obejście przez port-forward (udostępni serwis lokalnie na porcie 8080)
 kubectl --kubeconfig=./k3s-kubeconfig -n hello-world port-forward svc/hello-world 8080:80 &
 
 dziala: curl -v http://localhost:8080/ | head -n 10
-
 dziala: http://localhost:8080/
 
 
