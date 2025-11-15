@@ -5,6 +5,7 @@ metadata:
   namespace: {{ dhcp_namespace }}
 data:
   dhcpd.conf: |
+    ddns-update-style none;
     default-lease-time 600;
     max-lease-time 7200;
     authoritative;
@@ -13,5 +14,4 @@ data:
       range 172.17.10.100 172.17.10.200;
       option routers 172.17.0.1;
       option domain-name-servers 8.8.8.8, 8.8.4.4;
-      option domain-name "local";
     }

@@ -39,6 +39,14 @@ Użyjemy potężnego modułu kubernetes.core.helm.
 GO TO --> roles/kube_monitoring_stack/README--uruchomienie-K3s-i-weryfikacja.md
 
 
+------------------- dhcp_server ---------------------- 
+# Step.7
+GO TO --> roles/dhcp_server/README.md   
+utruchomienie serwera DHCP w klastrze K3s za pomocą DaemonSet 
+
+------------------- end of dhcp_server ----------------------
+
+
 
 
 

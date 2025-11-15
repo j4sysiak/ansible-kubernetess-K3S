@@ -1,4 +1,6 @@
 ---
 - hosts: localhost
+  vars:
+    dhcp_interface: "eth0"
   roles:
     - dhcp_server

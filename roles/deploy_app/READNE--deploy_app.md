@@ -12,7 +12,7 @@ Nasz cel: Zautomatyzujemy wdrożenie ingress-nginx, którego wcześniej instalow
 
 *****************************************************************************************************
 Deploy application
-# ansible-playbook deploy_helm_chart.yml
+# ansible-playbook -i inventory deploy_helm_chart.yml
 
 
 Weryfikacja: Sprawdź, czy pody ingress-nginx znowu działają:

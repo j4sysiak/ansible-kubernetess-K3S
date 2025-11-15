@@ -22,12 +22,12 @@ Wszystkie pliki konfiguracyjne naszej aplikacji umieścimy wewnątrz nowej roli.
 # Etap 3: Implementacja Zadań w tasks/main.yml
 Zadania w nowej roli będą bardzo proste: zastosuj oba pliki manifestu.
  - roles/hello_kubernetes_app/tasks/main.yml 
-
+ 
 
 # Etap 4: Stwórz Playbook do Wdrożenia Aplikacji
 Upewnij się, że Twój klaster K3s i ingress-nginx działają.
 Uruchamiamy playbooka, który wywoła naszą nową rolę:
-# ansible-playbook deploy_hello_app.yml
+# ansible-playbook -i inventory deploy_hello_app.yml
 
 # Etap 5: Weryfikacja:
 Sprawdź, czy pody działają:

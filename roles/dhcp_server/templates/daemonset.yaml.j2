@@ -28,6 +28,8 @@ spec:
       containers:
       - name: isc-dhcp
         image: "{{ dhcp_image }}"
+        args:
+          - "{{ dhcp_interface }}"
         securityContext:
           privileged: true
         env:

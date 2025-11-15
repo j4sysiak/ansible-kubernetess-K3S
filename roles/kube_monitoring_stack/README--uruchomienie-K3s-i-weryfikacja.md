@@ -39,7 +39,7 @@ community.kubernetes:2.0.1 was installed successfully
 
 
 5)  Uruchom playbook:
-# ansible-playbook deploy_monitoring.yml      /  (Może to potrwać kilka minut).
+# ansible-playbook -i inventory  deploy_monitoring.yml      /  (Może to potrwać kilka minut).
 
 6) Weryfikacja:
    Sprawdź pody:

@@ -11,8 +11,8 @@ sprawdź klienta kubectl (lokalnie)
 1) Sprawdź i użyj wbudowanego k3s kubectl (jeśli jest)
    Czemu to ważne? Potwierdzasz, że k3s działa wewnątrz kontenera.
 
-jeżeli zrestartowałeś kontener, uruchom kubectl k3s wewnątrz kontenera:
-# docker exec -it k3s-master
+jeżeli zrestartowałeś kontener Dockera (np. restart laptopa), uruchom "kubectl k3s" wewnątrz kontenera dockera:
+# docker exec -it k3s-master bash
     nohup /usr/local/bin/k3s server --write-kubeconfig-mode 644 > /var/log/k3s.log 2>&1 &
     (trzeba poczekać minutę lub dwie na pełne uruchomienie k3s)
     exit

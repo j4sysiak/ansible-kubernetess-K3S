@@ -1,6 +1,6 @@
 
 
-# ansible-playbook install_helm.yml --ask-become-pass
+# ansible-playbook -i inventory install_helm.yml --ask-become-pass
 
 password na roota: jacek
 
