@@ -1,0 +1,23 @@
+---
+# Domyślne zmienne dla roli dhcp_server_dockerhub (obraz z Docker Hub)
+
+# Nazwa namespace w K3s
+dhcp_namespace: dhcp-dockerhub
+
+# Obraz z Docker Hub (ISC DHCP Server)
+dhcp_image: networkboot/dhcpd:latest
+
+# Interfejs sieciowy (przekazany przez -e podczas uruchomienia)
+dhcp_interface: eth0
+
+# Konfiguracja sieci DHCP
+dhcp_subnet: 172.17.0.0
+dhcp_netmask: 255.255.0.0
+dhcp_range_start: 172.17.20.100
+dhcp_range_end: 172.17.20.200
+dhcp_router: 172.17.0.1
+dhcp_dns_servers: "8.8.8.8, 8.8.4.4"
+dhcp_domain_name: local
+dhcp_default_lease_time: 600    # 10 minut
+dhcp_max_lease_time: 7200       # 2 godziny
+

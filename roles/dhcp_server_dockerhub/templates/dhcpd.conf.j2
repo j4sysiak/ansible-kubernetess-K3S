@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dhcpd-config
+  namespace: {{ dhcp_namespace }}
+data:
+  dhcpd.conf: |
+    ddns-update-style none;
+    default-lease-time {{ dhcp_default_lease_time }};
+    max-lease-time {{ dhcp_max_lease_time }};
+    authoritative;
+
+    subnet {{ dhcp_subnet }} netmask {{ dhcp_netmask }} {
+      range {{ dhcp_range_start }} {{ dhcp_range_end }};
+      option routers {{ dhcp_router }};
+      option domain-name-servers {{ dhcp_dns_servers }};
+      option domain-name "{{ dhcp_domain_name }}";
+    }

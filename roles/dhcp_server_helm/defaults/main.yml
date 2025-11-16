@@ -1,0 +1,38 @@
+---
+dhcp_namespace: dhcp-helm
+dhcp_release_name: dhcp-server-helm
+
+# Dowolny obraz Dockera (zmień wg potrzeb)
+dhcp_image_repository: networkboot/dhcpd
+dhcp_image_tag: latest
+dhcp_image_pull_policy: IfNotPresent
+
+# Parametry sieci DHCP (zmień wg swojej sieci)
+dhcp_interface: eth0
+dhcp_subnet: 172.17.30.0
+dhcp_netmask: 255.255.255.0
+dhcp_range_start: 172.17.30.100
+dhcp_range_end: 172.17.30.200
+dhcp_routers:
+  - 172.17.30.1
+dhcp_dns_servers:
+  - 8.8.8.8
+  - 1.1.1.1
+dhcp_domain_name: lan
+
+# Wartości przekazywane do Helma
+dhcp_helm_values:
+  image:
+    repository: "{{ dhcp_image_repository }}"
+    tag: "{{ dhcp_image_tag }}"
+    pullPolicy: "{{ dhcp_image_pull_policy }}"
+  hostNetwork: true
+  config:
+    interface: "{{ dhcp_interface }}"
+    subnet: "{{ dhcp_subnet }}"
+    netmask: "{{ dhcp_netmask }}"
+    rangeStart: "{{ dhcp_range_start }}"
+    rangeEnd: "{{ dhcp_range_end }}"
+    routers: "{{ dhcp_routers }}"
+    dnsServers: "{{ dhcp_dns_servers }}"
+    domainName: "{{ dhcp_domain_name }}"

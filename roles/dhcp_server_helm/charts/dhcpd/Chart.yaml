@@ -1,0 +1,6 @@
+apiVersion: v2
+name: dhcpd
+description: Minimal ISC DHCP server chart (DaemonSet, hostNetwork)
+type: application
+version: 0.1.0
+appVersion: "4.4"

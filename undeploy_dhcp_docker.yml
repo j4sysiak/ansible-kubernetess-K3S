@@ -1,0 +1,36 @@
+---
+- name: Remove DHCP Docker deployment
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    dhcp_namespace: default  # zamień na właściwy namespace
+  tasks:
+    - name: Delete DHCP pod
+      kubernetes.core.k8s:
+        state: absent
+        api_version: v1
+        kind: Pod
+        name: dhcp-server
+        namespace: "{{ dhcp_namespace }}"
+      ignore_errors: true
+
+    - name: Delete DHCP ConfigMap
+      kubernetes.core.k8s:
+        state: absent
+        api_version: v1
+        kind: ConfigMap
+        name: dhcp-config
+        namespace: "{{ dhcp_namespace }}"
+      ignore_errors: true
+
+    - name: Wait for pod termination
+      kubernetes.core.k8s_info:
+        kind: Pod
+        name: dhcp-server
+        namespace: "{{ dhcp_namespace }}"
+      register: pod_info
+      until: pod_info.resources | length == 0
+      retries: 30
+      delay: 2
+      ignore_errors: true

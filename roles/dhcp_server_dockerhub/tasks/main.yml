@@ -1,0 +1,22 @@
+---
+- name: Create namespace for DHCP server
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ playbook_dir }}/k3s-kubeconfig"
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ dhcp_namespace }}"
+
+- name: Create ConfigMap with dhcpd.conf
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ playbook_dir }}/k3s-kubeconfig"
+    definition: "{{ lookup('template', 'dhcpd.conf.j2') | from_yaml }}"
+
+- name: Deploy DHCP server DaemonSet
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ playbook_dir }}/k3s-kubeconfig"
+    definition: "{{ lookup('template', 'daemonset.yaml.j2') | from_yaml }}"

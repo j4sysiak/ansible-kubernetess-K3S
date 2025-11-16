@@ -1,0 +1,25 @@
+# Dodaj te zmienne na początku pliku
+dhcp_namespace: "dhcp-helm"
+dhcp_image: "networkboot/dhcpd:latest"
+dhcp_interface: "eth0"
+
+# Pozostałe wartości
+image:
+  repository: networkboot/dhcpd
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+hostNetwork: true
+
+config:
+  interface: "eth0"
+  subnet: "172.17.30.0"
+  netmask: "255.255.255.0"
+  rangeStart: "172.17.30.100"
+  rangeEnd: "172.17.30.200"
+  routers:
+    - "172.17.30.1"
+  dnsServers:
+    - "8.8.8.8"
+    - "1.1.1.1"
+  domainName: "lan"

@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dhcp-server-dockerhub
+  namespace: {{ dhcp_namespace }}
+  labels:
+    app: dhcp-server-dockerhub
+spec:
+  selector:
+    matchLabels:
+      app: dhcp-server-dockerhub
+  template:
+    metadata:
+      labels:
+        app: dhcp-server-dockerhub
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      initContainers:
+        - name: init-leases
+          image: busybox:1.36
+          command: ["sh","-c","touch /data/dhcpd.leases"]
+          volumeMounts:
+            - name: dhcp-data
+              mountPath: /data
+      containers:
+        - name: isc-dhcp
+          image: {{ dhcp_image }}
+          command: ["/usr/sbin/dhcpd"]
+          args:
+            - "-4"
+            - "-f"
+            - "-d"
+            - "-cf"
+            - "/data/dhcpd.conf"
+            - "-lf"
+            - "/data/dhcpd.leases"
+            - "{{ dhcp_interface }}"
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN","NET_RAW"]
+          volumeMounts:
+            - name: dhcp-config
+              mountPath: /data/dhcpd.conf
+              subPath: dhcpd.conf
+            - name: dhcp-data
+              mountPath: /data
+      volumes:
+        - name: dhcp-config
+          configMap:
+            name: dhcpd-config
+        - name: dhcp-data
+          emptyDir: {}

@@ -1,0 +1,35 @@
+- name: Ustal ścieżkę kubeconfig
+  set_fact:
+    k3s_kubeconfig_path: "{{ playbook_dir }}/k3s-kubeconfig"
+
+- name: Skopiuj kubeconfig z kontenera jeśli brak
+  command: docker cp k3s-master:/etc/rancher/k3s/k3s.yaml "{{ k3s_kubeconfig_path }}"
+  args:
+    creates: "{{ k3s_kubeconfig_path }}"
+
+- name: Ustaw poprawny adres serwera w kubeconfig (https://localhost:6443)
+  replace:
+    path: "{{ k3s_kubeconfig_path }}"
+    regexp: 'server: https?://127\.0\.0\.1:6443'
+    replace: 'server: https://localhost:6443'
+
+- name: Sprawdź dostęp do API (kubectl get nodes)
+  command: kubectl --kubeconfig "{{ k3s_kubeconfig_path }}" get nodes
+  register: nodes_out
+  failed_when: nodes_out.rc != 0
+
+- name: Deploy DHCP server via Helm (install/upgrade)
+  command: >
+    helm upgrade --install dhcp-server-helm
+    {{ role_path }}/charts/dhcpd
+    -n dhcp-helm --create-namespace
+    --kubeconfig "{{ k3s_kubeconfig_path }}"
+  environment:
+    KUBECONFIG: "{{ k3s_kubeconfig_path }}"
+
+- name: Lista releasów (walidacja)
+  command: helm list -n dhcp-helm --kubeconfig "{{ k3s_kubeconfig_path }}"
+  environment:
+    KUBECONFIG: "{{ k3s_kubeconfig_path }}"
+  register: helm_list
+  changed_when: false

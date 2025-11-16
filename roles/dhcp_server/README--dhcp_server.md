@@ -214,8 +214,22 @@ plik:   roles/dhcp_server/templates/daemonset.yaml.j2
 zastosowano:
 # kubectl --kubeconfig=k3s-kubeconfig apply -f dhcp-daemonset.yaml
 
-    Można użyć obrazu isc-dhcp-server z Docker Hub.  -->  ale nie używamy go tutaj 
-    Użyto obrazu:  dhcp_image: networkboot/dhcpd:latest
+    Użyto tu użyto obrazu:  localhost/isc-dhcp-server:latest   
+    Można użyć obrazu networkboot/dhcpd:latest z Docker Hub. --> przyklad w roli dhcp_server_dockerhub
+    hostNetwork: true – pod ma bezpośredni dostęp do interfejsów sieciowych węzła (potrzebne do DHCP).
+    Montowanie ConfigMap do /data/dhcpd.conf w podzie.
+    emptyDir do przechowywania pliku dhcpd.leases (tymczasowy, znika po usunięciu poda).
+
+    Porównanie ról: (dhcp_server  i  dhcp_server_dockerhub)
+    Cecha         | dhcp_server (lokalna)            | dhcp_server_dockerhub (Docker Hub)  
+    --------------+----------------------------------+----------------------------------
+    Obraz           localhost/isc-dhcp-server:latest   networkboot/dhcpd:latest
+    DaemonSet       dhcp-server                        dhcp-server-dockerhub
+    Namespace       dhcp                               dhcp-dockerhub
+    Zakres IP       172.17.10.100–200                  172.17.20.100–200
+    Źródło obrazu   Lokalny build                      Docker Hub (publiczny)
+    DaemonSet       dhcp-server                        dhcp-server-dockerhub
+
 
 6. Uruchomienie przez Ansible Playbook
    Stworzyliśmy playbook Ansible (deploy_dhcp_server.yml), który automatyzuje:

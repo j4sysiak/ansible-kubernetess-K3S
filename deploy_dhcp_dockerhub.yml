@@ -1,0 +1,28 @@
+---
+- name: Deploy ISC DHCP Server (Docker Hub image) to K3s
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  # Opcjonalne nadpisania (możesz też podać przez -e)
+  # o tak:   ansible-playbook -i inventory deploy_dhcp_dockerhub.yml -e "dhcp_image=networkboot/dhcpd:latest dhcp_interface=eth0 dhcp_namespace=dhcp-dockerhub"
+  vars:
+  # dhcp_image: networkboot/dhcpd:latest
+  # dhcp_namespace: dhcp-dockerhub
+  # dhcp_interface: eth0
+
+
+  pre_tasks:
+    - name: Sprawdź obecność kubeconfig
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/k3s-kubeconfig"
+      register: kube_cfg
+
+    - name: Przerwij gdy brak kubeconfig
+      ansible.builtin.fail:
+        msg: "Brak pliku kubeconfig w '{{ playbook_dir }}/k3s-kubeconfig'."
+      when: not kube_cfg.stat.exists
+
+  roles:
+    - role: dhcp_server_dockerhub
+      tags: ["dhcp_dockerhub"]

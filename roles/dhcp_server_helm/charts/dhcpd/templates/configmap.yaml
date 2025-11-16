@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "dhcpd.fullname" . }}-config
+  labels:
+    {{- include "dhcpd.labels" . | nindent 4 }}
+data:
+  dhcpd.conf: |
+    default-lease-time 600;
+    max-lease-time 7200;
+    option domain-name "{{ .Values.config.domainName }}";
+    option domain-name-servers {{ join ", " .Values.config.dnsServers }};
+    subnet {{ .Values.config.subnet }} netmask {{ .Values.config.netmask }} {
+      range {{ .Values.config.rangeStart }} {{ .Values.config.rangeEnd }};
+      option routers {{ join ", " .Values.config.routers }};
+    }

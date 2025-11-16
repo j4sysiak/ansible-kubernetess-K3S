@@ -1,0 +1,34 @@
+---
+- name: Deploy DHCP via Helm on K3s
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    #dhcp_image_repository: networkboot/dhcpd:latest
+    #dhcp_image_tag: latest
+    #dhcp_interface: "eth0"
+    dhcp_subnet: "172.17.30.0"
+    dhcp_netmask: "255.255.255.0"
+    dhcp_range_start: "172.17.30.100"
+    dhcp_range_end: "172.17.30.200"
+    dhcp_routers:
+      - 172.17.30.1
+    dhcp_dns_servers:
+      - 8.8.8.8
+      - 1.1.1.1
+    dhcp_domain_name: lan
+
+  pre_tasks:
+    - name: Sprawdź obecność kubeconfig
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/k3s-kubeconfig"
+      register: kube_cfg
+
+    - name: Przerwij gdy brak kubeconfig
+      ansible.builtin.fail:
+        msg: "Brak pliku kubeconfig w '{{ playbook_dir }}/k3s-kubeconfig'."
+      when:
+        not kube_cfg.stat.exists
+
+  roles:  # ✅ Przenieś na ten sam poziom co 'vars'
+    - role: dhcp_server_helm
