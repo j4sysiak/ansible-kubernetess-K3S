@@ -1,0 +1,92 @@
+---
+- name: Sprawdź, czy obraz jest już w k3s
+  ansible.builtin.command: docker exec k3s-master ctr --namespace k8s.io images ls -q
+  register: k3s_images
+  changed_when: false
+  failed_when: false
+  become: true
+
+- name: Zbuduj lokalny obraz DHCP
+  community.docker.docker_image:
+    name: "{{ dhcp_image }}"
+    source: build
+    build:
+      path: "{{ role_path }}/files"
+  become: true
+  when: dhcp_build_image | default(true)
+
+
+
+- name: Zapisz obraz do tar
+  ansible.builtin.command: docker save {{ dhcp_image }} -o /tmp/dhcp-image.tar
+  become: true
+  changed_when: false
+
+- name: Skopiuj tar do kontenera k3s-master
+  ansible.builtin.command: docker cp /tmp/dhcp-image.tar k3s-master:/tmp/dhcp-image.tar
+  become: true
+  changed_when: false
+
+- name: Wykryj komendę ctr wewnątrz k3s
+  ansible.builtin.command: >
+    docker exec k3s-master sh -lc '
+      if command -v k3s >/dev/null 2>&1; then
+        echo "k3s ctr";
+      elif [ -x /var/lib/rancher/k3s/data/current/bin/ctr ]; then
+        echo "/var/lib/rancher/k3s/data/current/bin/ctr";
+      elif command -v ctr >/dev/null 2>&1; then
+        echo "ctr";
+      else
+        echo "";
+      fi'
+  register: k3s_ctr_cmd
+  changed_when: false
+  become: true
+
+- name: Przerwij, jeśli nie znaleziono ctr w kontenerze
+  ansible.builtin.fail:
+    msg: "Nie znaleziono `ctr` w kontenerze `k3s-master`. Sprawdź instalację K3s."
+  when: k3s_ctr_cmd.stdout | trim == ""
+  become: false
+
+- name: Zaimportuj obraz do k3s (containerd)
+  ansible.builtin.command: >
+    docker exec k3s-master sh -lc '{{ k3s_ctr_cmd.stdout | trim }} --namespace k8s.io images import /tmp/dhcp-image.tar'
+  become: true
+  changed_when: true
+
+
+
+- name: Utwórz namespace dla DHCP
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ dhcp_namespace }}"
+    kubeconfig: "{{ playbook_dir }}/k3s-kubeconfig"
+
+- name: Utwórz ConfigMap z dhcpd.conf
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: dhcpd-config
+        namespace: "{{ dhcp_namespace }}"
+      data:
+        dhcpd.conf: "{{ lookup('file', role_path ~ '/files/dhcpd.conf') }}"
+    kubeconfig: "{{ playbook_dir }}/k3s-kubeconfig"
+
+- name: Renderuj szablon DaemonSet
+  ansible.builtin.template:
+    src: daemonset.yaml.j2
+    dest: /tmp/dhcp-daemonset.yaml
+
+- name: Zastosuj DaemonSet DHCP
+  community.kubernetes.k8s:
+    state: present
+    src: /tmp/dhcp-daemonset.yaml
+    kubeconfig: "{{ playbook_dir }}/k3s-kubeconfig"

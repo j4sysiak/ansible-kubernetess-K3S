@@ -1,0 +1,5 @@
+dhcp_namespace: default
+dhcp_image: "localhost/my-dhcp-server:latest"  # Lokalny obraz
+#dhcp_image: localhost/isc-dhcp-server:latest
+#dhcp_image: sirferdek/isc-dhcp-server:latest
+dhcp_interface: "eth0"

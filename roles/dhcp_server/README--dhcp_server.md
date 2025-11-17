@@ -35,15 +35,17 @@ Weryfikacja, że pod już nie istnieje
 Potem uruchom playbook:
 # ansible-playbook -i inventory deploy_dhcp_server.yml -e "dhcp_interface=eth0"
 
-lub start z poziomu terminala:
-
-
+lub start z poziomu terminala:  (ale tego nie wykonuj raczej ręcznie jeśli używasz Ansible)
 # kubectl --kubeconfig=k3s-kubeconfig apply -f dhcpd-daemonset.yaml
 # kubectl --kubeconfig=k3s-kubeconfig create namespace dhcp
 
 -------------  sprawdzenie działania  -----------------
 1 Sprawdź czy DaemonSet działa i czy pod jest w stanie READY
   DaemonSet READY 1/1
+
+# kubectl --kubeconfig=k3s-kubeconfig -n dhcp apply -f /tmp/dhcp-daemonset.yaml
+# kubectl --kubeconfig=k3s-kubeconfig -n dhcp rollout restart ds/dhcp-server
+# kubectl --kubeconfig=k3s-kubeconfig -n dhcp rollout status ds/dhcp-server
 
 # kubectl --kubeconfig=k3s-kubeconfig rollout status daemonset/dhcp-server -n dhcp
     daemon set "dhcp-server" successfully rolled out
@@ -71,7 +73,48 @@ sprawdzenie jakiego obrazu używa pod
 # POD=$(kubectl --kubeconfig=k3s-kubeconfig get pod -n dhcp -l app=dhcp-server -o jsonpath='{.items[0].metadata.name}')
 # kubectl --kubeconfig=k3s-kubeconfig get pod -n dhcp "$POD" -o jsonpath='{.spec.containers[0].image}'
     networkboot/dhcpd:latest(ansible-venv) 
- 
+
+lub
+# export KUBECONFIG=k3s-kubeconfig
+# IMG=$(kubectl -n dhcp get ds dhcp-server -o jsonpath='{.spec.template.spec.containers[0].image}')
+# echo "DS image: $IMG"
+    DS image: networkboot/dhcpd:latest
+
+Czy taki tag istnieje w containerd K3s?
+# docker exec k3s-master sh -lc 'k3s ctr --namespace k8s.io images ls || /var/lib/rancher/k3s/data/current/bin/ctr --namespace k8s.io images ls' | grep -F "$IMG" || echo "BRAK OBRAZU: $IMG"
+    docker.io/networkboot/dhcpd:latest  application/vnd.oci.image.manifest.v1+json   sha256:b1a8d99bf071ddb9302ace091752b7872ac6dd2a48a76f3b74fadf8fb0e13796 5.5 MiB    linux/amd64                                                                                                         io.cri-containerd.image=managed
+
+Zdarzenia poda (zobaczysz m.in. ErrImageNeverPull / ImageInspectError)
+# POD=$(kubectl -n dhcp get pod -l app=dhcp-server -o jsonpath='{.items[0].metadata.name}')
+# kubectl -n dhcp describe pod "$POD" | sed -n '/Events:/,$p'
+
+(te bledy poniżej były kiedy probowalem uruchomic reczny build obrazu isc-dhcp-server i nie bylo go w containerd K3s):
+Type     Reason     Age                   From               Message
+  ----     ------     ----                  ----               -------
+Normal   Scheduled  13m                   default-scheduler  Successfully assigned dhcp/dhcp-server-4tq7m to k3s-master
+Normal   Pulled     13m                   kubelet            Container image "busybox:1.36" already present on machine
+Normal   Created    13m                   kubelet            Created container: init-leases
+Normal   Started    13m                   kubelet            Started container init-leases
+Warning  Failed     10m (x6 over 13m)     kubelet            Error: failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: "eth0": executable file not found in $PATH
+Warning  BackOff    3m34s (x47 over 13m)  kubelet            Back-off restarting failed container isc-dhcp in pod dhcp-server-4tq7m_dhcp(759e9655-854e-4f9b-95e8-279555136677)
+Normal   Pulled     3m7s (x8 over 13m)    kubelet            Container image "networkboot/dhcpd:latest" already present on machine
+Normal   Created    3m7s (x8 over 13m)    kubelet            Created container: isc-dhcp
+
+
+(a tu jest ok, kiedy wrocilem do obrazu networkboot/dhcpd:latest z Docker Hub):
+Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+Normal  Scheduled  97s   default-scheduler  Successfully assigned dhcp/dhcp-server-qp6vh to k3s-master
+Normal  Pulled     97s   kubelet            Container image "busybox:1.36" already present on machine
+Normal  Created    97s   kubelet            Created container: init-leases
+Normal  Started    96s   kubelet            Started container init-leases
+Normal  Pulling    96s   kubelet            Pulling image "networkboot/dhcpd:latest"
+Normal  Pulled     95s   kubelet            Successfully pulled image "networkboot/dhcpd:latest" in 1.247s (1.247s including waiting). Image size: 68312697 bytes.
+Normal  Created    94s   kubelet            Created container: isc-dhcp
+Normal  Started    94s   kubelet            Started container isc-dhcp
+
+
+
 2. Logi zawierają "Listening on LPF/eth0"  -- oraz braku Not configured to listen on any interfaces!
 # POD=$(kubectl --kubeconfig=k3s-kubeconfig get pod -n dhcp -l app=dhcp-server -o jsonpath='{.items[0].metadata.name}')
 # kubectl --kubeconfig=k3s-kubeconfig logs -n dhcp "$POD" --tail=100 | grep -i 'Listening on LPF'
