@@ -1,3 +1,4 @@
 dhcp_namespace: default
 dhcp_image: localhost/isc-dhcp-server:latest
+#dhcp_image: sirferdek/isc-dhcp-server:latest
 dhcp_interface: "eth0"

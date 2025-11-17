@@ -17,10 +17,20 @@ Bezpośredni dostęp do interfejsów sieciowych węzła (hostNetwork: true)
 usun/restart pod (Po zmianie ConfigMap z subPath pamiętaj o restarcie poda):
 Przeładuj ConfigMap:
 ansible-playbook ... lub kubectl apply -f ....
-- Zrestartuj DaemonSet: kubectl rollout restart ds/dhcp-server -n dhcp.
+- Zrestartuj DaemonSet: 
+# kubectl rollout restart ds/dhcp-server -n dhcp
 # kubectl --kubeconfig=k3s-kubeconfig delete pod -n dhcp -l app=dhcp-server
 lub
 # kubectl --kubeconfig=k3s-kubeconfig rollout restart ds/dhcp-server -n dhcp
+lub usuń pod ręcznie:
+# kubectl --kubeconfig=k3s-kubeconfig delete daemonset dhcp-server -n dhcp
+
+(Opcjonalnie) Usuń cały namespace
+# kubectl --kubeconfig=k3s-kubeconfig delete namespace dhcp
+
+Weryfikacja, że pod już nie istnieje
+# kubectl --kubeconfig=k3s-kubeconfig get pods -n dhcp
+    No resources found in dhcp namespace.
 
 Potem uruchom playbook:
 # ansible-playbook -i inventory deploy_dhcp_server.yml -e "dhcp_interface=eth0"
@@ -57,16 +67,35 @@ lub start z poziomu terminala:
     NAME                READY   STATUS    RESTARTS        AGE   IP           NODE         NOMINATED NODE   READINESS GATES
     dhcp-server-xlwwd   1/1     Running   2 (6m55s ago)   7m    172.17.0.2   k3s-master   <none>           <none>
 
+sprawdzenie jakiego obrazu używa pod
+# POD=$(kubectl --kubeconfig=k3s-kubeconfig get pod -n dhcp -l app=dhcp-server -o jsonpath='{.items[0].metadata.name}')
+# kubectl --kubeconfig=k3s-kubeconfig get pod -n dhcp "$POD" -o jsonpath='{.spec.containers[0].image}'
+    networkboot/dhcpd:latest(ansible-venv) 
  
 2. Logi zawierają "Listening on LPF/eth0"  -- oraz braku Not configured to listen on any interfaces!
+# POD=$(kubectl --kubeconfig=k3s-kubeconfig get pod -n dhcp -l app=dhcp-server -o jsonpath='{.items[0].metadata.name}')
 # kubectl --kubeconfig=k3s-kubeconfig logs -n dhcp "$POD" --tail=100 | grep -i 'Listening on LPF'
-    Listening on LPF/eth0/d2:c9:83:06:53:e7/172.17.0.0/16
+    Defaulted container "isc-dhcp" out of: isc-dhcp, init-leases (init)
+    Listening on LPF/eth0/42:83:27:62:a5:54/172.17.0.0/16
 
 Podgląd ciągły (przerwij Ctrl+C)
 Zapisz nazwę poda
 # POD=$(kubectl --kubeconfig=k3s-kubeconfig get pod -n dhcp -l app=dhcp-server -o jsonpath='{.items[0].metadata.name}')
 # kubectl --kubeconfig=k3s-kubeconfig logs -n dhcp "$POD" -f
-# kubectl --kubeconfig=k3s-kubeconfig logs -n dhcp -l app=dhcp-server -f
+    Defaulted container "isc-dhcp" out of: isc-dhcp, init-leases (init)
+    You must add the 'docker run' option '--net=host' if you want to provide DHCP service to the host network.
+    Internet Systems Consortium DHCP Server 4.4.1
+    Copyright 2004-2018 Internet Systems Consortium.
+    All rights reserved.
+    For info, please visit https://www.isc.org/software/dhcp/
+    Config file: /data/dhcpd.conf
+    Database file: /data/dhcpd.leases
+    PID file: /var/run/dhcpd.pid
+    Wrote 0 leases to leases file.
+    Listening on LPF/eth0/42:83:27:62:a5:54/172.17.0.0/16
+    Sending on   LPF/eth0/42:83:27:62:a5:54/172.17.0.0/16
+    Sending on   Socket/fallback/fallback-net
+    Server starting service.
 
 Szukaj linii typu: Listening on LPF/eth0/... oraz braku Not configured to listen on any interfaces!
 # kubectl --kubeconfig=k3s-kubeconfig logs -n dhcp -l app=dhcp-server --tail=200 -f
