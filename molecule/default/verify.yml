@@ -1,0 +1,9 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Wait for systemd
+      ansible.builtin.wait_for:
+        path: /run/systemd/system
+        timeout: 60

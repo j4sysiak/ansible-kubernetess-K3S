@@ -46,15 +46,15 @@ start usługi ssh i sprawdź jej status:
     root@k3s-master:/# service ssh status
     * sshd is running
 
-
+-i inventory.ini
 # ************************** only once *****************************************
 # cd /home/jacek/dev/ansible-kubernetess-K3S 
-# ansible-playbook -i inventory bootstrap_k3s.yml         // Bootstrap K3s container with Python
+# ansible-playbook -i inventory/hosts.ini bootstrap_k3s.yml         // Bootstrap K3s container with Python
 # ******************************************************************************
    
 Natychmiast po tym, uruchom ponownie główny playbook (nie bootstrap, tylko ten główny):
-# ansible-playbook -i inventory k3s_master_destroy.yml
-# ansible-playbook -i inventory deploy_k3s_master.yml     //Deploy K3s Master Server to Docker
+# ansible-playbook -i inventory/hosts.ini k3s_master_destroy.yml
+# ansible-playbook -i inventory/hosts.ini deploy_k3s_master.yml     //Deploy K3s Master Server to Docker
 
 Sprawdź status SSH w kontenerze
 # docker exec -it k3s-master bash -c 'service ssh status'
