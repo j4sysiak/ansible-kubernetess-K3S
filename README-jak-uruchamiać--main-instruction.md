@@ -25,7 +25,7 @@ GO TO --> roles/hello_kubernetes_app/README--hello_kubernetes_app.md
 # Step.6A
 GO TO --> roles/helm_installer/README--install_helm.md
 
-# Step.6B
+# Step.6B  (musi być zainstalowany helm jak wyżej 6A)
 GO TO --> roles/deploy_app/README--deploy_app_using_helm_chart.md
 ----------------  end of roles/k3s_master  --------------------
 
@@ -33,7 +33,7 @@ GO TO --> roles/deploy_app/README--deploy_app_using_helm_chart.md
 
 
 -------------------- kube_monitoring_stack ----------------------
-# Step.7
+# Step.7   (musi być zainstalowany helm jak wyżej 6A)
 rola: kube_monitoring_stack:
 1. przygotowuje Grafanę do udostępnienia przez Ingress
 2. Deploy Kube Prometheus Stack using Helm
