@@ -1,6 +1,23 @@
+ingress-nginx is an Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer.
 
-# ansible-playbook -i inventory destroy_helm_installer.yml --ask-become-pass    (jacek)
-# ansible-playbook -i inventory install_helm.yml --ask-become-pass    (jacek)
+Helm nie jest częścią ingress-nginx.
+Helm to niezależne narzędzie (package manager dla Kubernetesa). ingress-nginx to kontroler Ingress (zestaw manifestów/zasobów), który możesz zainstalować
+np. przy pomocy Helma (chart ingress-nginx) lub bezpośrednio przez manifesty.
+
+Przykład instalacji przez Helm (bash):
+
+# helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+# helm repo update
+# helm install my-ingress ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --kubeconfig=k3s-kubeconfig
+
+Sprawdź wersję helma: (na lokalnym hoscie, nie w kontenerze):
+$ helm version
+version.BuildInfo{Version:"v3.19.2", GitCommit:"8766e718a0119851f10ddbe4577593a45fadf544", GitTreeState:"clean", GoVersion:"go1.24.9"}
+
+ 
+---------------------------------------------------------------
+# ansible-playbook -i inventory/hosts.ini destroy_helm_installer.yml --ask-become-pass    (jacek)
+# ansible-playbook -i inventory/hosts.ini deploy_helm_installer.yml --ask-become-pass    (jacek)
 
 password na roota: jacek
 
@@ -32,17 +49,12 @@ Aby sprawdzić, czy zmiana zadziałała, spróbuj uruchomić jakąś prostą kom
 sudo ls /root
 
 jeszcze raz bez hasła:
-# ansible-playbook -i inventory destroy_helm_installer.yml
-# ansible-playbook -i inventory install_helm.yml
+# ansible-playbook -i inventory/hosts.ini destroy_helm_installer.yml
+# ansible-playbook -i inventory/hosts.ini deploy_helm_installer.yml
 
-Sprawdź wersję helma: (na lokalnym hoscie, nie w kontenerze):
-$ helm version
-version.BuildInfo{Version:"v3.19.2", GitCommit:"8766e718a0119851f10ddbe4577593a45fadf544", GitTreeState:"clean", GoVersion:"go1.24.9"}
+**********************************************************************
 
-
-**************************************************************8
-
-Dodaj ingress-nginx z repozytorium GitHuba/ingress-nginx
+Dodaj bramkarza (Ingress Nginx) z repozytorium GitHuba/ingress-nginx
 # helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 
 Zaktualizuj listę dostępnych chartów
@@ -163,7 +175,7 @@ HELM_DEBUG=1 helm repo update
 
  
 
-Zainstaluj pod ingress-nginx w swoim klastrze (pamiętaj o kubeconfig)
+Zainstaluj bramkarza (Ingress Nginx) w swoim klastrze (pamiętaj o kubeconfig)
 # helm install my-ingress ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --kubeconfig=k3s-kubeconfig
 
 ```Po wykonaniu tych komend, zobaczysz, że `kubectl get pods -n ingress-nginx` pokaże te same pody, 

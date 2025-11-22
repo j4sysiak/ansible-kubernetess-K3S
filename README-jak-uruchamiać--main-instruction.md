@@ -23,7 +23,7 @@ GO TO --> roles/hello_kubernetes_app/README--hello_kubernetes_app.md
 
 ---------------   reszta to jak chcesz: --------------------
 # Step.6A
-GO TO --> roles/helm_installer/README--install_helm.md
+GO TO --> roles/helm_installer/README--helm-installer.md
 
 # Step.6B  (musi być zainstalowany helm jak wyżej 6A)
 GO TO --> roles/deploy_app/README--deploy_app_using_helm_chart.md
