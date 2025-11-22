@@ -1,7 +1,7 @@
-# W terminalu WSL (lub Intelij) aktywuj środowisko: 
+W terminalu WSL (lub Intelij) aktywuj środowisko: 
 
-source ~/ansible-venv/bin/activate
-cd ~/dev/ansible-kubernetess-K3S
+#  source ~/ansible-venv/bin/activate
+#  cd ~/dev/ansible-kubernetess-K3S
 
 ----------------  roles/k3s_master  --------------------
 # Step.1
@@ -21,7 +21,7 @@ GO TO --> roles/hello_world_nginx/README.md
 GO TO --> roles/hello_kubernetes_app/README--hello_kubernetes_app.md
 
 
----------------   reszta to jak chcesz: --------------------------------------------------------------------------
+---------------  instalacja Ingress Nginx przez Helm ręcznie 6A i za pomocą taska 6B --------------------------------------------------------------------------
 # Step.6A   (instalacja helma (w tasku) na WSL oraz instalacja ręczna Ingress NGINX w klastrze K3s przy użyciu tego helma)
 GO TO --> roles/installing_charts_using_helm/README--installing_charts_using_helm.md
 
@@ -41,7 +41,7 @@ rola: kube_monitoring_stack:
 Użyjemy potężnego modułu kubernetes.core.helm.
 # ansible-galaxy collection install community.kubernetes
 
-GO TO --> roles/kube_monitoring_stack/README--uruchomienie-K3s-i-weryfikacja.md
+GO TO --> roles/kube_monitoring_stack/README--kube_monitoring_stack.md.md
 --------------------- end of kube_monitoring_stack ----------------------
 
 

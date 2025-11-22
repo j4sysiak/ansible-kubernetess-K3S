@@ -93,3 +93,18 @@ helm
 - Tym wskazujesz, do którego klastra Kubernetes (tu: K3s) Helm ma się podłączyć i tam zainstalować release.
 -----------------------------------------------------------------
 
+CRD w Kubernetes to CustomResourceDefinition.
+W skrócie:
+Jest to definicja własnego typu zasobu w Kubernetes, rozszerzenie API.
+Standardowe typy to np. Pod, Service, Ingress.
+Dzięki CRD możesz mieć nowe typy, np. Prometheus, Alertmanager, ServiceMonitor, które tworzy kube-prometheus-stack.
+Jak to działa w Twoim przypadku:
+Zainstalowanie kube-prometheus-stack przez Helm dodało CRD, np.:
+prometheuses.monitoring.coreos.com
+alertmanagers.monitoring.coreos.com
+servicemonitors.monitoring.coreos.com
+Po dodaniu CRD możesz robić:
+kubectl get prometheus
+kubectl get servicemonitor itd., bo API serwera już zna te typy.
+Usuwanie CRD (kubectl delete crd ...) usuwa typ zasobu z klastra (i zwykle wszystkie jego obiekty). U Ciebie wiszące delete crd powodowało problemy z API.
+

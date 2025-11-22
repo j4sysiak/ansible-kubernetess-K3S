@@ -9,6 +9,9 @@ Installing 'community.kubernetes:2.0.1' to '/home/jacek/.ansible/collections/ans
 community.kubernetes:2.0.1 was installed successfully
 'kubernetes.core:5.4.1' is already installed, skipping.
 
+$ helm version
+version.BuildInfo{Version:"v3.19.2", GitCommit:"8766e718a0119851f10ddbe4577593a45fadf544", GitTreeState:"clean", GoVersion:"go1.24.9"}
+
 *********************************************************************************************
 1) Upewnij się, że Twój klaster K3s i ingress-nginx działają.
    (Jeśli kontener jest zatrzymany. Uruchom go za pomocą:  # docker start k3s-master)
@@ -24,10 +27,10 @@ community.kubernetes:2.0.1 was installed successfully
     k3s-master   Ready    control-plane   35m   v1.34.1+k3s1
 
 
-3) Sprawdź, czy "bramkarz" (Ingress Nginx) działa:
+3) Sprawdź, czy Ingress Nginx działa  (uruchamialismy go w kroku 6A i 6B):
 # kubectl --kubeconfig=k3s-kubeconfig get pods -n ingress-nginx
     NAME                                                   READY   STATUS    RESTARTS   AGE
-    my-ingress-ingress-nginx-controller-6b974db7d5-qcglk   1/1     Running   0          12m
+    my-ingress-ingress-nginx-controller-6766768fbc-l2nf2   1/1     Running   0          15m
 
 
 4)  Podsumowanie
@@ -39,7 +42,40 @@ community.kubernetes:2.0.1 was installed successfully
 
 
 5)  Uruchom playbook:
-# ansible-playbook -i inventory  deploy_monitoring.yml      /  (Może to potrwać kilka minut).
+# ansible-playbook -i inventory/hosts.ini destroy_kube_monitoring_stack.yml -vvv
+# ansible-playbook -i inventory/hosts.ini destroy_kube_monitoring_stack---HeavyDuty.yml -vvv
+# ansible-playbook -i inventory/hosts.ini deploy_monitoring.yml -vvv   /  (Może to potrwać kilka minut).
+
+*Pobieranie chartów Helm*
+Przy pierwszym `deploy_monitoring.yml` Helm musi:
+dociągnąć indeks repozytorium,
+pobrać chart `prometheus-community/kube-prometheus-stack`.
+
+# kubectl --kubeconfig=./k3s-kubeconfig get pods -A
+    NAMESPACE         NAME                                                       READY   STATUS    RESTARTS   AGE
+    hello-namespace   hello-kubernetes-bd87d88d7-6wh9l                           1/1     Running   0          6h5m
+    hello-namespace   hello-kubernetes-bd87d88d7-vzvhp                           1/1     Running   0          6h5m
+    hello-namespace   hello-kubernetes-bd87d88d7-zmnzd                           1/1     Running   0          6h5m
+    hello-world       hello-world-7f86d974d5-wxc6f                               1/1     Running   0          6h33m
+    ingress-nginx     my-ingress-ingress-nginx-controller-6766768fbc-l2nf2       1/1     Running   0          75m
+    kube-system       coredns-7896679cc-lsvwt                                    1/1     Running   0          8h
+    kube-system       local-path-provisioner-578895bd58-csnjt                    1/1     Running   0          8h
+    kube-system       metrics-server-7b9c9c4b9c-2bjxw                            1/1     Running   0          8h
+    kube-system       svclb-my-ingress-ingress-nginx-controller-c0dbd07b-jnjj7   2/2     Running   0          75m
+
+# kubectl --kubeconfig=./k3s-kubeconfig get crd | head
+    NAME                                        CREATED AT
+    addons.k3s.cattle.io                        2025-11-22T09:48:57Z
+    alertmanagerconfigs.monitoring.coreos.com   2025-11-22T17:10:15Z
+    alertmanagers.monitoring.coreos.com         2025-11-22T17:10:15Z
+    etcdsnapshotfiles.k3s.cattle.io             2025-11-22T09:48:57Z
+    helmchartconfigs.helm.cattle.io             2025-11-22T09:48:57Z
+    helmcharts.helm.cattle.io                   2025-11-22T09:48:57Z
+    podmonitors.monitoring.coreos.com           2025-11-22T17:10:15Z
+    probes.monitoring.coreos.com                2025-11-22T17:10:15Z
+    prometheusagents.monitoring.coreos.com      2025-11-22T17:10:15Z
+ 
+
 
 6) Weryfikacja:
    Sprawdź pody:
