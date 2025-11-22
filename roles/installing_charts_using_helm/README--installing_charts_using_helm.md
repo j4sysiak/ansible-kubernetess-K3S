@@ -315,8 +315,42 @@ spec:
 ```
 
 ```Po wykonaniu tych komend, zobaczysz, że `kubectl get pods -n ingress-nginx` pokaże te same pody, 
-      które widziałeś wcześniej, ale tym razem zainstalowane i zarządzane przez Helma
+      które zobaczysz w roli: deploy_app_using_helm_chart, ale tym razem zainstalowane i zarządzane przez Helma
 
 # kubectl get pods -n ingress-nginx
     NAME                                                   READY   STATUS    RESTARTS   AGE
     my-ingress-ingress-nginx-controller-6766768fbc-xb4z4   1/1     Running   0          8m49s
+
+
+   to jest outpuz z roli: deploy_app_using_helm_chart
+    NAME                                                   READY   STATUS    RESTARTS   AGE
+    my-ingress-ingress-nginx-controller-6766768fbc-l2nf2   1/1     Running   0          103s
+
+
+Krótko:
+nie uruchamiasz Nginx „lokalnie” jako zwykły serwer HTTP, tylko wystawiasz Ingress Nginx w klastrze K3s,
+a http://localhost:8081 to tylko sposób przekierowania ruchu z Twojej maszyny do klastra.
+
+Żeby ten finał zadziałał, muszą być spełnione wszystkie kroki „infrastrukturalne”,
+które wcześniej robiłeś ręcznie:
+1. Klaster K3s musi działać (w kontenerze / VM, tak jak w Twoim projekcie).
+2. W tym klastrze musi być zainstalowany Ingress Nginx:
+   kiedyś robiłeś to ręcznie komendą helm install ...,
+
+teraz robi to rola installing_charts_using_helm.
+
+3. Musi być uruchomione forwardowanie portu z Twojego hosta na Service w klastrze, np.:
+# kubectl --kubeconfig=k3s-kubeconfig port-forward -n ingress-nginx svc/my-ingress-ingress-nginx-controller 8081:80
+
+4. Dopiero wtedy wejście na http://localhost:8081 pokaże stronę Welcome to nginx!.
+
+Rola installing_charts_using_helm (tak jak późniejsza rola: deploy_app_using_helm_chart) odpowiada tylko za krok 2 – czyli za to,
+żeby w klastrze był zainstalowany release Helma z Ingress Nginx.
+Samo „odpalenie Nginx lokalnie” i dostęp przez localhost:8081 wymaga jeszcze osobnego kroku z kubectl
+port-forward (albo NodePort / LoadBalancer), którego teraz rola nie robi.
+
+
+teraz dziala:
+Finał: Otwórz przeglądarkę i wejdź na http://localhost:8081
+Powinieneś zobaczyć domyślną stronę powitalną ingress-nginx:
+Welcome to nginx!

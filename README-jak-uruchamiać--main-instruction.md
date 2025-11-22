@@ -21,19 +21,19 @@ GO TO --> roles/hello_world_nginx/README.md
 GO TO --> roles/hello_kubernetes_app/README--hello_kubernetes_app.md
 
 
----------------   reszta to jak chcesz: --------------------
-# Step.6A
-GO TO --> roles/helm_installer/README--helm-installer.md
+---------------   reszta to jak chcesz: --------------------------------------------------------------------------
+# Step.6A   (instalacja helma (w tasku) na WSL oraz instalacja ręczna Ingress NGINX w klastrze K3s przy użyciu tego helma)
+GO TO --> roles/installing_charts_using_helm/README--installing_charts_using_helm.md
 
-# Step.6B  (musi być zainstalowany helm jak wyżej 6A)
-GO TO --> roles/deploy_app/README--deploy_app_using_helm_chart.md
-----------------  end of roles/k3s_master  --------------------
+# Step.6B  (musi być zainstalowany helm w WSL jak wyżej 6A)
+GO TO --> roles/deploy_app_using_helm_chart/READNE--deploy_app_using_helm_chart.md
+----------------  end of roles/k3s_master  -------------------------------------------------------------------------
 
 
 
 
 -------------------- kube_monitoring_stack ----------------------
-# Step.7   (musi być zainstalowany helm jak wyżej 6A)
+# Step.7   (musi być zainstalowany helm w WSK jak wyżej 6A)
 rola: kube_monitoring_stack:
 1. przygotowuje Grafanę do udostępnienia przez Ingress
 2. Deploy Kube Prometheus Stack using Helm

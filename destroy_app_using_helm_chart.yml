@@ -1,0 +1,24 @@
+---
+- name: Usunięcie aplikacji wdrożonej przez rolę deploy_app_using_helm_chart
+  hosts: all
+  become: false
+
+  vars:
+    helm_app_name: my-ingress            # ten sam, co w deploy
+    helm_app_namespace: ingress-nginx    # ten sam, co w deploy
+    kubeconfig_path: ./k3s-kubeconfig
+
+  tasks:
+    - name: Odinstaluj aplikację z Helm (jeśli istnieje)
+      ansible.builtin.command: >
+        helm uninstall {{ helm_app_name }}
+        --namespace {{ helm_app_namespace }}
+        --kubeconfig {{ kubeconfig_path }}
+      register: helm_uninstall_result
+      failed_when: >
+        helm_uninstall_result.rc != 0
+        and 'release: not found' not in helm_uninstall_result.stderr
+      changed_when: "'uninstalled' in helm_uninstall_result.stdout"
+      delegate_to: localhost
+      become: false
+      connection: local
