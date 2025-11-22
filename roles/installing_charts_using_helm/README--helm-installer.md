@@ -16,8 +16,8 @@ version.BuildInfo{Version:"v3.19.2", GitCommit:"8766e718a0119851f10ddbe4577593a4
 
  
 ---------------------------------------------------------------
-# ansible-playbook -i inventory/hosts.ini destroy_helm_installer.yml --ask-become-pass    (jacek)
-# ansible-playbook -i inventory/hosts.ini deploy_helm_installer.yml --ask-become-pass    (jacek)
+# ansible-playbook -i inventory/hosts.ini destroy_installing_charts_using_helm.yml --ask-become-pass    (jacek)
+# ansible-playbook -i inventory/hosts.ini deploy_installing_charts_using_helm.yml --ask-become-pass    (jacek)
 
 password na roota: jacek
 
@@ -49,10 +49,10 @@ Aby sprawdzić, czy zmiana zadziałała, spróbuj uruchomić jakąś prostą kom
 sudo ls /root
 
 jeszcze raz bez hasła:
-# ansible-playbook -i inventory/hosts.ini destroy_helm_installer.yml
-# ansible-playbook -i inventory/hosts.ini deploy_helm_installer.yml
+# ansible-playbook -i inventory/hosts.ini destroy_installing_charts_using_helm.yml
+# ansible-playbook -i inventory/hosts.ini deploy_installing_charts_using_helm.yml
 
-**********************************************************************
+***********************************************************************************
 
 Dodaj bramkarza (Ingress Nginx) z repozytorium GitHuba/ingress-nginx
 # helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx

@@ -4,4 +4,4 @@
   connection: local
   become: true
   roles:
-    - role: helm_installer
+    - role: installing_charts_using_helm
