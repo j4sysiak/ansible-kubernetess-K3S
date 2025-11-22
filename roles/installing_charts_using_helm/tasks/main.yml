@@ -9,4 +9,13 @@
 - name: Run the Helm installation script
   ansible.builtin.shell: /tmp/get_helm_3.sh
   args:
-    creates: /usr/local/bin/helm # <-- To jest klucz do idempotencji!
+    creates: /usr/local/bin/helm
+
+- name: Check if Helm installer exists
+  ansible.builtin.stat:
+    path: /tmp/get_helm_3.sh
+  register: helm_installer_file
+
+- name: Debug Helm installer path
+  ansible.builtin.debug:
+    var: helm_installer_file

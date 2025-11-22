@@ -64,3 +64,32 @@ Czyli:
 Chart to „rpm/deb dla Kubernetesa” – gotowy pakiet aplikacji dla klastra.
 helm install ... działa podobnie jak apt install ... lub dnf install ..., tylko zamiast plików na systemie instaluje zasoby w klastrze (Deployment, Service, Ingress itd.).
  
+--------------------------------------------------------------------
+
+# helm install my-ingress ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --kubeconfig=k3s-kubeconfig
+
+Objaśnienie komendy Helm:
+---------------------------------------------------------------
+helm
+- Program CLI, menedżer pakietów (chartów) dla Kubernetesa.
+  install
+- Akcja: zainstaluj nowy release z charta do klastra.
+  my-ingress
+- Nazwa releaseʼu Helma.
+- Po instalacji wszystkie obiekty w klastrze będą miały etykiety/nazwy zawierające tę nazwę (np. my-ingress-ingress-nginx-controller).
+  ingress-nginx/ingress-nginx
+- Skąd wziąć chart:
+- ingress-nginx (przed slash) – nazwa repozytorium chartów, które wcześniej dodałeś helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+- ingress-nginx (za slash) – nazwa konkretnego charta w tym repo.
+- Razem: weź chart ingress-nginx z repo ingress-nginx.
+  --namespace ingress-nginx
+- Zainstaluj ten release do przestrzeni nazw Kubernetesa ingress-nginx.
+- Wszystkie Deploymenty, Serviceʼy itd. trafią do namespace ingress-nginx.
+  --create-namespace
+- Jeśli namespace ingress-nginx jeszcze nie istnieje, utwórz go automatycznie przed instalacją.
+- Dzięki temu nie musisz wcześniej robić kubectl create namespace ingress-nginx.
+  --kubeconfig=k3s-kubeconfig
+- Użyj konkretnego pliku kubeconfig (k3s-kubeconfig) zamiast domyślnego ~/.kube/config.
+- Tym wskazujesz, do którego klastra Kubernetes (tu: K3s) Helm ma się podłączyć i tam zainstalować release.
+-----------------------------------------------------------------
+
