@@ -2,8 +2,8 @@
 # *** Nowy, Bardziej Zaawansowany Krok: Wdrażanie Aplikacji za pomocą Helma i Ansible
 # ***********************************************************************************
 
-Stworzymy nową, super użyteczną rolę: deploy_app - 'ansible-kubernetess-K3S\roles\deploy_app'
-Ta rola nie będzie instalować oprogramowania za pomocą apt.
+Stworzymy nową, super użyteczną rolę: deploy_app - 'ansible-kubernetess-K3S\roles\deploy_app_using_helm_chart'
+Rola to NIE będzie instalować oprogramowania za pomocą apt!
 Zamiast tego, użyje komendy helm, którą właśnie zainstalowaliśmy,
 aby wdrożyć gotową aplikację (chart) do naszego klastra Kubernetes.
 To nauczy Cię, jak orkiestrować narzędzia wiersza poleceń za pomocą Ansible.
@@ -12,7 +12,7 @@ Nasz cel: Zautomatyzujemy wdrożenie ingress-nginx, którego wcześniej instalow
 
 *****************************************************************************************************
 Deploy application
-# ansible-playbook -i inventory deploy_helm_chart.yml
+# ansible-playbook -i inventory deploy_app_using_helm_chart.yml
 
 
 Weryfikacja: Sprawdź, czy pody ingress-nginx znowu działają:

@@ -1,5 +1,10 @@
 ---
-# tasks file for hello_kubernetes_app
+- name: Ensure namespace hello-namespace exists
+  command: kubectl --kubeconfig={{ playbook_dir }}/k3s-kubeconfig apply -f {{ playbook_dir }}/roles/hello_kubernetes_app/files/namespace.yaml
+  register: ns_apply
+  changed_when: "'created' in ns_apply.stdout or 'configured' in ns_apply.stdout"
+  failed_when: false
+
 - name: Apply the application manifests (Deployment and Service)
   kubernetes.core.k8s:
     state: present

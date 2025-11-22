@@ -1,0 +1,43 @@
+---
+- name: Destroy hello_kubernetes_app in K3s
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    kubeconfig: "{{ playbook_dir }}/k3s-kubeconfig"
+    manifests:
+      - "{{ playbook_dir }}/roles/hello_kubernetes_app/files/deployment.yaml"
+      - "{{ playbook_dir }}/roles/hello_kubernetes_app/files/service.yaml"
+      - "{{ playbook_dir }}/roles/hello_kubernetes_app/files/ingress.yaml"
+      - "{{ playbook_dir }}/roles/hello_kubernetes_app/files/namespace.yaml"
+    namespace: hello-namespace
+
+  tasks:
+    - name: Delete application manifests if present
+      command: kubectl --kubeconfig={{ kubeconfig }} delete -f {{ item }} --ignore-not-found
+      loop: "{{ manifests }}"
+      register: delete_results
+      failed_when: false
+      changed_when: false
+
+    - name: Delete namespace `{{ namespace }}` (will remove remaining resources)
+      command: kubectl --kubeconfig={{ kubeconfig }} delete namespace {{ namespace }} --ignore-not-found
+      register: delete_ns
+      failed_when: false
+      changed_when: "'deleted' in delete_ns.stdout"
+
+    - name: Wait until namespace `{{ namespace }}` is gone
+      command: kubectl --kubeconfig={{ kubeconfig }} get namespace {{ namespace }}
+      register: ns_check
+      retries: 30
+      delay: 2
+      until: ns_check.rc != 0
+      failed_when: false
+      changed_when: false
+
+    - name: Show destroy results
+      debug:
+        msg:
+          - "deleted manifests: {{ delete_results.results | map(attribute='stdout_lines') | list }}"
+          - "delete_ns: {{ delete_ns.stdout_lines | default([]) }}"
+          - "namespace_present: {{ 'yes' if ns_check.rc == 0 else 'no' }}"

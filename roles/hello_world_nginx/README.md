@@ -1,16 +1,60 @@
+
+# ansible-playbook -i inventory/hosts.ini destroy_hello_world_nginx.yml
+# ansible-playbook -i inventory/hosts.ini deploy_hello_world_nginx.yml
+ 
+
 Opis, co my tu robimy:
 ----------------------
-Rola hello_world wykonuje proste wdrożenie aplikacji i wystawienie jej w klastrze — krótko:
-Tworzy (lub zapewnia) namespace hello-world.
-Aplikuje manifesty: Deployment (prosty serwer, readinessProbe, zasoby) i Service typu NodePort (eksponuje aplikację poza klastrem).
-Czeka na rollout Deploymentu (zadanie typu Wait for deployment rollout).
-Zawiera instrukcje debugowania i obejścia problemów z dostępem do NodePort (np. kubectl port-forward).
+Rola `hello_world_nginx` wykonuje proste wdrożenie aplikacji nginx i wystawienie jej w klastrze — krótko:
+ - Tworzy (lub zapewnia) namespace `hello-world`.
+ - Aplikuje manifesty: 
+    1. Deployment (prosty serwer, readinessProbe, zasoby)
+    2. Service typu NodePort (eksponuje aplikację poza klastrem).
+ - Czeka na rollout Deploymentu (zadanie typu Wait for deployment rollout).
+ - Zawiera instrukcje debugowania i obejścia problemów z dostępem do NodePort (np. kubectl port-forward).
 
-Szybkie komendy debugowe (użyj swojego kubeconfig):
+Szybkie komendy debugowe (użyj swojego kubeconfig):  (poczekaj chwilę po wdrożeniu, aż pody będą w stanie Ready)
+# kubectl --kubeconfig=./k3s-kubeconfig get all -n hello-world
+    NAME                               READY   STATUS    RESTARTS   AGE
+    pod/hello-world-7f86d974d5-xvbm8   1/1     Running   0          6m51s
+
+    NAME                  TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+    service/hello-world   NodePort   10.43.41.170   <none>        80:30080/TCP   6m51s
+
+    NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
+    deployment.apps/hello-world   1/1     1            1           6m51s
+
+    NAME                                     DESIRED   CURRENT   READY   AGE
+    replicaset.apps/hello-world-7f86d974d5   1         1         1       6m51s
+
+# kubectl --kubeconfig=./k3s-kubeconfig get svc -n hello-world hello-world
+    NAME          TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+    hello-world   NodePort   10.43.41.170   <none>        80:30080/TCP   6m16s
+
+# kubectl --kubeconfig=./k3s-kubeconfig get deployments -n hello-world
+    NAME          READY   UP-TO-DATE   AVAILABLE   AGE
+    hello-world   1/1     1            1           7m54s
+
+potem sprawdź pody:
 # kubectl --kubeconfig=./k3s-kubeconfig -n hello-world get pods -o wide
+    NAME                           READY   STATUS    RESTARTS   AGE     IP           NODE         NOMINATED NODE   READINESS GATES
+    hello-world-7f86d974d5-xvbm8   1/1     Running   0          8m24s   10.42.0.10   k3s-master   <none>           <none>
+
 # kubectl --kubeconfig=./k3s-kubeconfig -n hello-world describe deployment hello-world
+  [...]
+
 # kubectl --kubeconfig=./k3s-kubeconfig -n hello-world get events --sort-by=.metadata.creationTimestamp
+    LAST SEEN   TYPE     REASON              OBJECT                              MESSAGE
+    9m19s       Normal   Scheduled           pod/hello-world-7f86d974d5-xvbm8    Successfully assigned hello-world/hello-world-7f86d974d5-xvbm8 to k3s-master
+    9m20s       Normal   SuccessfulCreate    replicaset/hello-world-7f86d974d5   Created pod: hello-world-7f86d974d5-xvbm8
+    9m20s       Normal   ScalingReplicaSet   deployment/hello-world              Scaled up replica set hello-world-7f86d974d5 from 0 to 1
+    9m19s       Normal   Pulling             pod/hello-world-7f86d974d5-xvbm8    Pulling image "nginx:stable-alpine"
+    5m31s       Normal   Pulled              pod/hello-world-7f86d974d5-xvbm8    Successfully pulled image "nginx:stable-alpine" in 4m9.867s (4m9.867s including waiting). Image size: 21015643 bytes.
+    5m31s       Normal   Created             pod/hello-world-7f86d974d5-xvbm8    Created container: nginx
+    5m30s       Normal   Started             pod/hello-world-7f86d974d5-xvbm8    Started container nginx
+
 # kubectl --kubeconfig=./k3s-kubeconfig -n hello-world logs <pod-name> -c <container-name>
+# kubectl --kubeconfig=./k3s-kubeconfig -n hello-world logs hello-world-7f86d974d5-xvbm8 -c hello-world
 
 Port‑forward (szybkie obejście): 
 # kubectl --kubeconfig=./k3s-kubeconfig -n hello-world port-forward svc/hello-world 8080:80 &
@@ -33,18 +77,49 @@ Zweryfikuj dostępność serwisu z poziomu klastra (curl z podu).
 Jeśli k3s działa w kontenerze/VM, użyj kubectl port-forward albo zmapuj porty na hoście.
 
 
+opis deploymentu
+# kubectl --kubeconfig=./k3s-kubeconfig -n hello-world describe deployment hello-world
+[...]
 
-# pokaż węzły i ich IP
-kubectl --kubeconfig=./k3s-kubeconfig get nodes -o wide
+pokaż pody i status
+# kubectl --kubeconfig=./k3s-kubeconfig -n hello-world get pods -o wide
+    NAME                           READY   STATUS    RESTARTS   AGE     IP           NODE         NOMINATED NODE   READINESS GATES
+    hello-world-7f86d974d5-wxc6f   1/1     Running   0          6m22s   10.42.0.11   k3s-master   <none>           <none>
 
-# pokaż service (nodePort)
-kubectl --kubeconfig=./k3s-kubeconfig get svc -n hello-world hello-world -o yaml
+opis konkretnego poda (zastąp nazwą z poprzedniego)
+kubectl --kubeconfig=./k3s-kubeconfig -n hello-world describe pod <pod-name>
+# kubectl --kubeconfig=./k3s-kubeconfig -n hello-world describe pod hello-world-7f86d974d5-wxc6f
+[...]
 
-# pokaż endpoints
-kubectl --kubeconfig=./k3s-kubeconfig get endpoints -n hello-world
+logi poda (wszystkie kontenery)
+kubectl --kubeconfig=./k3s-kubeconfig -n hello-world logs <pod-name> --all-containers
+# kubectl --kubeconfig=./k3s-kubeconfig -n hello-world logs hello-world-7f86d974d5-wxc6f --all-containers
+[...]
 
-# pokaż pody
-kubectl --kubeconfig=./k3s-kubeconfig -n hello-world get pods -o wide
+zdarzenia w namespace
+# kubectl --kubeconfig=./k3s-kubeconfig -n hello-world get events --sort-by='.metadata.creationTimestamp'
+     LAST SEEN   TYPE     REASON              OBJECT                              MESSAGE
+     9m39s       Normal   Scheduled           pod/hello-world-7f86d974d5-wxc6f    Successfully assigned hello-world/hello-world-7f86d974d5-wxc6f to k3s-master
+     9m39s       Normal   SuccessfulCreate    replicaset/hello-world-7f86d974d5   Created pod: hello-world-7f86d974d5-wxc6f
+     9m39s       Normal   ScalingReplicaSet   deployment/hello-world              Scaled up replica set hello-world-7f86d974d5 from 0 to 1
+     9m38s       Normal   Pulled              pod/hello-world-7f86d974d5-wxc6f    Container image "nginx:stable-alpine" already present on machine
+     9m38s       Normal   Created             pod/hello-world-7f86d974d5-wxc6f    Created container: nginx
+     9m38s       Normal   Started             pod/hello-world-7f86d974d5-wxc6f    Started container nginx
+
+pokaż węzły (nodes) i ich IP
+# kubectl --kubeconfig=./k3s-kubeconfig get nodes -o wide
+    NAME         STATUS   ROLES           AGE    VERSION        INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION                     CONTAINER-RUNTIME
+    k3s-master   Ready    control-plane   111m   v1.34.1+k3s1   172.17.0.2    <none>        Ubuntu 22.04.5 LTS   6.6.87.2-microsoft-standard-WSL2   containerd://2.1.4-k3s2
+
+pokaż service (nodePort)
+# kubectl --kubeconfig=./k3s-kubeconfig get svc -n hello-world hello-world -o yaml
+[...]
+
+pokaż endpoints
+# kubectl --kubeconfig=./k3s-kubeconfig get endpoints -n hello-world
+    NAME          ENDPOINTS       AGE
+    hello-world   10.42.0.11:80   11m
+ 
 
 # test z wnętrza klastra (uruchomi kontener z curl i spróbuje się połączyć z serwisem DNS)
 kubectl --kubeconfig=./k3s-kubeconfig run --rm -i --tty curltest --image=curlimages/curl --restart=Never -- sh -c "curl -sS http://hello-world:80 || echo 'cluster curl failed'"

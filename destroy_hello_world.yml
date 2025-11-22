@@ -1,0 +1,41 @@
+---
+- name: Destroy hello_world in K3s
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    kubeconfig: "{{ playbook_dir }}/k3s-kubeconfig"
+
+  tasks:
+    - name: Delete resources defined in role manifest (if present)
+      command: kubectl --kubeconfig={{ kubeconfig }} delete -f {{ playbook_dir }}/roles/hello_world/files/simple-app.yaml --ignore-not-found
+      register: delete_manifest
+      changed_when: delete_manifest.rc == 0 and delete_manifest.stdout != ""
+      failed_when: false
+
+    - name: Delete namespace hello-world (will remove remaining resources)
+      command: kubectl --kubeconfig={{ kubeconfig }} delete namespace hello-world --ignore-not-found
+      register: delete_ns
+      changed_when: "'deleted' in delete_ns.stdout"
+      failed_when: false
+
+    - name: Wait until namespace hello-world is gone
+      command: kubectl --kubeconfig={{ kubeconfig }} get namespace hello-world
+      register: ns_check
+      retries: 30
+      delay: 2
+      until: ns_check.rc != 0
+      failed_when: false
+
+    - name: Ensure no hello-world pods remain (defensive)
+      command: kubectl --kubeconfig={{ kubeconfig }} get pods -n hello-world --no-headers
+      register: pods_left
+      failed_when: false
+      changed_when: false
+
+    - name: Show result
+      debug:
+        msg:
+          - "delete_manifest: {{ delete_manifest.stdout_lines | default([]) }}"
+          - "delete_ns: {{ delete_ns.stdout_lines | default([]) }}"
+          - "pods_left: {{ pods_left.stdout_lines | default(['none']) }}"
