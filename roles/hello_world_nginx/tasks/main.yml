@@ -1,0 +1,85 @@
+
+---
+- block:
+    - name: Apply hello-world manifest
+      command: kubectl --kubeconfig={{ playbook_dir }}/k3s-kubeconfig apply -f {{ playbook_dir }}/roles/hello_world/files/simple-app.yaml
+
+    - name: Wait for deployment rollout
+      command: kubectl --kubeconfig={{ playbook_dir }}/k3s-kubeconfig -n hello-world rollout status deployment/hello-world --timeout=300s
+      register: rollout
+      failed_when: "'successfully rolled out' not in (rollout.stdout | default(''))"
+
+    - name: Show pods in hello-world
+      command: kubectl --kubeconfig={{ playbook_dir }}/k3s-kubeconfig -n hello-world get pods -o wide
+      register: pods
+      changed_when: false
+
+    - name: Show service and external access
+      command: kubectl --kubeconfig={{ playbook_dir }}/k3s-kubeconfig -n hello-world get svc hello-world -o wide
+      register: svc
+      changed_when: false
+
+    - name: Print quick info
+      debug:
+        msg:
+          - "{{ pods.stdout_lines }}"
+          - "{{ svc.stdout_lines }}"
+
+    - name: Get service nodePort
+      command: kubectl --kubeconfig={{ playbook_dir }}/k3s-kubeconfig -n hello-world get svc hello-world -o jsonpath=\"{.spec.ports[0].nodePort}\"
+      register: nodeport
+      changed_when: false
+      failed_when: false
+
+    - name: Get node internal IP (first node)
+      command: kubectl --kubeconfig={{ playbook_dir }}/k3s-kubeconfig get nodes -o jsonpath=\"{.items[0].status.addresses[?(@.type=='InternalIP')].address}\"
+      register: nodeip
+      changed_when: false
+      failed_when: false
+
+    - name: Show access URL
+      debug:
+        msg: "Aplikacja dostępna pod: http://{{ nodeip.stdout | default('N/A') }}:{{ nodeport.stdout | default('N/A') }}  (test: curl -sS http://{{ nodeip.stdout | default('N/A') }}:{{ nodeport.stdout | default('N/A') }}/ | head -n 10)"
+
+    - name: Test HTTP access (opcjonalne, nie powoduje błędu gdy nieosiągalne)
+      command: curl -sS --max-time 5 http://{{ nodeip.stdout | default('') }}:{{ nodeport.stdout | default('') }}/
+      register: curl_out
+      failed_when: false
+      changed_when: false
+
+    - name: Show curl result (opcjonalne)
+      debug:
+        var: curl_out.stdout_lines
+
+  rescue:
+    - name: Collect deployment describe
+      command: kubectl --kubeconfig={{ playbook_dir }}/k3s-kubeconfig -n hello-world describe deployment hello-world
+      register: deployment_desc
+      changed_when: false
+      failed_when: false
+
+    - name: Collect pod describe (label selector)
+      command: kubectl --kubeconfig={{ playbook_dir }}/k3s-kubeconfig -n hello-world describe pod -l app=hello-world
+      register: pods_desc
+      changed_when: false
+      failed_when: false
+
+    - name: Get pod names in hello-world
+      command: kubectl --kubeconfig={{ playbook_dir }}/k3s-kubeconfig -n hello-world get pods -o name
+      register: pod_list
+      changed_when: false
+      failed_when: false
+
+    - name: Collect first pod logs
+      command: kubectl --kubeconfig={{ playbook_dir }}/k3s-kubeconfig -n hello-world logs "{{ pod_list.stdout_lines[0] | default('') }}" --all-containers
+      register: pod_logs
+      changed_when: false
+      failed_when: false
+
+    - name: Fail with diagnostics
+      fail:
+        msg: |
+          Rollout failed.
+          deployment_describe={{ deployment_desc.stdout_lines }}
+          pods_describe={{ pods_desc.stdout_lines }}
+          first_pod_logs={{ pod_logs.stdout_lines }}

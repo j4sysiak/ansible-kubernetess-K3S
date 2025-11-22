@@ -1,0 +1,42 @@
+---
+- name: Destroy Helm releases installed by roles/helm_installer
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    kubeconfig: "{{ playbook_dir }}/k3s-kubeconfig"
+    helm_releases:
+      - name: my-ingress
+        namespace: ingress-nginx
+
+  tasks:
+    - name: Uninstall Helm releases (ignore missing)
+      command: >
+        helm --kubeconfig={{ kubeconfig }} -n {{ item.namespace }} uninstall {{ item.name }} --wait
+      loop: "{{ helm_releases }}"
+      register: helm_uninstalls
+      failed_when: false
+      changed_when: false
+
+    - name: Delete namespaces for releases (ignore if missing)
+      command: kubectl --kubeconfig={{ kubeconfig }} delete namespace {{ item }} --ignore-not-found
+      loop: "{{ helm_releases | map(attribute='namespace') | unique | list }}"
+      register: ns_deletes
+      failed_when: false
+      changed_when: false
+
+    - name: Wait until namespaces are gone
+      command: kubectl --kubeconfig={{ kubeconfig }} get namespace {{ item }}
+      loop: "{{ helm_releases | map(attribute='namespace') | unique | list }}"
+      register: ns_check
+      retries: 30
+      delay: 2
+      until: ns_check.rc != 0
+      failed_when: false
+      changed_when: false
+
+    - name: Show results
+      debug:
+        msg:
+          - "helm_uninstalls: {{ helm_uninstalls.results | map(attribute='stderr') | list }}"
+          - "ns_deletes: {{ ns_deletes.results | map(attribute='stdout') | list }}"

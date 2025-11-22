@@ -20,7 +20,8 @@ a to umozliwi użycie k3s kubectl poza dockerowym kontenerem, czyli na local ho�
 # export KUBECONFIG=$PWD/k3s-kubeconfig
 sprawdź pody w klastrze k3s:
 # docker exec -it k3s-master bash -c 'command -v k3s >/dev/null && k3s kubectl --kubeconfig=/etc/rancher/k3s/k3s.yaml get pods -A || echo "k3s binary not found"'
-
+lub alternatywnie:
+# kubectl get pods -A  (jak bedziedz mial ustawiony KUBECONFIG na k3s-kubeconfig i plik byl skopiowany lokalnie)
     NAMESPACE          NAME                                       READY   STATUS    RESTARTS        AGE
     hello-kubernetes   hello-kubernetes-app-2-84d5b6c48b-zw8cf    1/1     Running   1 (3m49s ago)   46h
     hello-world        hello-world-7f86d974d5-2qfp2               1/1     Running   1 (3m49s ago)   47h
@@ -30,10 +31,14 @@ sprawdź pody w klastrze k3s:
     kube-system        metrics-server-7b9c9c4b9c-kqs8m            1/1     Running   1 (3m49s ago)   2d
 
 opis:
-ingress-nginx/ingress-nginx-controller-... — Ingress Controller (odpowiada za routing HTTP/HTTPS do usług). 1/1 Running 0 oznacza, że kontroler jest uruchomiony i zdrowy.
-kube-system/coredns-... — DNS klastra (rozwiązywanie nazw usług/podów). 1/1 Running 0 = działa poprawnie.
-kube-system/local-path-provisioner-... — dostawca wolumenów lokalnych (dynamiczne PV). 1/1 Running 0 = działa.
-kube-system/metrics-server-... — zbiera metryki CPU/RAM dla klastra. 1/1 Running 0 = działa.
+ingress-nginx/ingress-nginx-controller-... — Ingress Controller (odpowiada za routing HTTP/HTTPS do usług). 
+                                             1/1 Running 0 oznacza, że kontroler jest uruchomiony i zdrowy.
+kube-system/coredns-... — DNS klastra (rozwiązywanie nazw usług/podów). 
+                          1/1 Running 0 = działa poprawnie.
+kube-system/local-path-provisioner-... — dostawca wolumenów lokalnych (dynamiczne PV). 
+                                         1/1 Running 0 = działa.
+kube-system/metrics-server-... — zbiera metryki CPU/RAM dla klastra. 
+                                 1/1 Running 0 = działa.
 
 2) Zalecane: skopiuj kubeconfig na localnego wsl hosta i użyj lokalnego kubectl
    Czemu to ważne? Teraz kubectl na hoście może łączyć się z k3s działającym w kontenerze.
@@ -202,18 +207,26 @@ ClusterIP są dostępne tylko wewnątrz klastra;
 aby dostać się z zewnątrz, użyj NodePort, LoadBalancer lub port‑forwarding.
 Brak EXTERNAL-IP nie oznacza błędu — po prostu brak zewnętrznego LB.
 
+ingress-nginx   ingress-nginx-controller             NodePort    10.43.161.247   <none>        80:30960/TCP,443:32160/TCP   32m
+ingress-nginx   ingress-nginx-controller-admission   ClusterIP   10.43.17.53     <none>        443/TCP                      32m
 
 Próba sprawdzenia Ingress Controller
-# kubectl describe svc my-ingress-ingress-nginx-controller -n kube-system
-    Error from server (NotFound): services "my-ingress-ingress-nginx-controller" not found
+# kubectl describe svc ingress-nginx-controller -n kube-system
+    Error from server (NotFound): services "ingress-nginx-controller" not found
+# kubectl describe svc ingress-nginx-controller-admission -n kube-system
+    Error from server (NotFound): services "ingress-nginx-controller-admission" not found
 
 Co to znaczy?
 Może być zainstalowany w innym namespace (np. ingress-nginx).
 Może mieć inną nazwę.
 Może nie być jeszcze zainstalowany.
 Jak to naprawić?
-kubectl get svc -A | grep ingress
+Sprawdź wszystkie serwisy i znajdź ingress-nginx:
+# kubectl get svc -A | grep ingress
 Jeśli nic nie widzisz — Ingress Controller nie jest zainstalowany. Trzeba go dodać ręcznie lub przez playbook.
+
+    ingress-nginx   ingress-nginx-controller             NodePort    10.43.161.247   <none>        80:30960/TCP,443:32160/TCP   37m
+    ingress-nginx   ingress-nginx-controller-admission   ClusterIP   10.43.17.53     <none>        443/TCP                      37m
 
 
 

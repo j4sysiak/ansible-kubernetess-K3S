@@ -1,6 +1,6 @@
 
-
-# ansible-playbook -i inventory install_helm.yml --ask-become-pass
+# ansible-playbook -i inventory destroy_helm_installer.yml --ask-become-pass    (jacek)
+# ansible-playbook -i inventory install_helm.yml --ask-become-pass    (jacek)
 
 password na roota: jacek
 
@@ -32,14 +32,17 @@ Aby sprawdzić, czy zmiana zadziałała, spróbuj uruchomić jakąś prostą kom
 sudo ls /root
 
 jeszcze raz bez hasła:
-# ansible-playbook install_helm.yml 
+# ansible-playbook -i inventory destroy_helm_installer.yml
+# ansible-playbook -i inventory install_helm.yml
 
-jacek@Friedrichshafen:~/dev/ansible-kubernetess-K3S$ helm version
-version.BuildInfo{Version:"v3.19.0", GitCommit:"3d8990f0836691f0229297773f3524598f46bda6", GitTreeState:"clean", GoVersion:"go1.24.7"}
+Sprawdź wersję helma: (na lokalnym hoscie, nie w kontenerze):
+$ helm version
+version.BuildInfo{Version:"v3.19.2", GitCommit:"8766e718a0119851f10ddbe4577593a45fadf544", GitTreeState:"clean", GoVersion:"go1.24.9"}
+
 
 **************************************************************8
 
-Dodaj repozytorium z Ingress Nginx
+Dodaj ingress-nginx z repozytorium GitHuba/ingress-nginx
 # helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 
 Zaktualizuj listę dostępnych chartów
@@ -105,7 +108,11 @@ Sprawdź lokalne reguły sieciowe w WSL/linuksie
 
 Jeśli sieć działa, odśwież repozytoria helma
 # helm repo remove ingress-nginx
+    "ingress-nginx" has been removed from your repositories
+
 # helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+    "ingress-nginx" has been added to your repositories
+
 # helm repo update
     (ansible-venv) jacek@Friedrichshafen:~/dev/ansible-kubernetess-K3S$ helm repo update
     Hang tight while we grab the latest from your chart repositories...
@@ -114,10 +121,49 @@ Jeśli sieć działa, odśwież repozytoria helma
     ...Successfully got an update from the "grafana" chart repository
     Update Complete. ⎈Happy Helming!⎈
 
+Wygląda na to, że połączenia do serwerów GitHub Pages są przerywane (TCP RST) — przyczyny: problem z siecią/ISP, WSL, ściana ogniowa/proxy, 
+  IPv6/MTU lub chwilowy błąd po stronie trasy. 
+Uruchom poniższe polecenia diagnostyczne w WSL (kolejno) i sprawdź wyników — pokażą czy to DNS, IPv6/IPv4, trasa lub blokada.
+
+
+# Sprawdź dostęp po IPv4
+curl -v -4 https://kubernetes.github.io/ingress-nginx/index.yaml
+
+# Wymuś połączenie do konkretnego IP (podaj IP z dig/nslookup)
+curl -v --resolve kubernetes.github.io:443:185.199.111.153 https://kubernetes.github.io/ingress-nginx/index.yaml
+
+# Sprawdź TLS/TCP bezpośrednio
+openssl s_client -connect 185.199.111.153:443 -servername kubernetes.github.io
+
+# Śledź trasę do hosta
+traceroute 185.199.111.153
+
+# Sprawdź ustawienia proxy i DNS
+env | grep -i proxy || true
+cat /etc/resolv.conf
+
+# Test MTU (jeśli pakiety są obcinane)
+ping -c 4 -M do -s 1472 185.199.111.153
+
+# Włącz agresywniejsze MTU probing (doraźnie)
+sudo sysctl -w net.ipv4.tcp_mtu_probing=1
+
+# Sprawdź lokalne reguły sieciowe/firewall
+sudo iptables -L -n
+sudo ufw status || true
+
+# Uruchom helm z debugiem (więcej logów)
+HELM_DEBUG=1 helm repo update
+
+# Dodatkowo sprawdź poza WSL (PowerShell/CMD) — czy problem występuje także tam
+# (uruchom helm repo update w Windowsie)
 
 
 
-Zainstaluj Ingress Nginx w swoim klastrze (pamiętaj o kubeconfig)
+
+ 
+
+Zainstaluj pod ingress-nginx w swoim klastrze (pamiętaj o kubeconfig)
 # helm install my-ingress ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --kubeconfig=k3s-kubeconfig
 
 ```Po wykonaniu tych komend, zobaczysz, że `kubectl get pods -n ingress-nginx` pokaże te same pody, 

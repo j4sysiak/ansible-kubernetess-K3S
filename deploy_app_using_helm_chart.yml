@@ -6,4 +6,4 @@
     # Definiujemy ścieżkę do naszego pliku kubeconfig
     kubeconfig_path: "{{ playbook_dir }}/k3s-kubeconfig"
   roles:
-    - role: deploy_app
+    - role: deploy_app_using_helm_chart
