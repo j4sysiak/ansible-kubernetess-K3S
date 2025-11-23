@@ -11,6 +11,7 @@ sprawdź klienta kubectl (lokalnie)
 1) Sprawdź i użyj wbudowanego k3s kubectl (jeśli jest)
    Czemu to ważne? Potwierdzasz, że k3s działa wewnątrz kontenera.
 
+-------------  Restart kontenera Docker  --------------
 jeżeli zrestartowałeś kontener Dockera (np. restart laptopa), uruchom "kubectl k3s" wewnątrz kontenera dockera:
 # docker exec -it k3s-master bash
     nohup /usr/local/bin/k3s server --write-kubeconfig-mode 644 > /var/log/k3s.log 2>&1 &
@@ -217,7 +218,7 @@ Próba sprawdzenia Ingress Controller
     Error from server (NotFound): services "ingress-nginx-controller-admission" not found
 
 Co to znaczy?
-Może być zainstalowany w innym namespace (np. ingress-nginx).
+Może być zainstalowany w innym namespace (np. Ingress Nginx).
 Może mieć inną nazwę.
 Może nie być jeszcze zainstalowany.
 Jak to naprawić?
