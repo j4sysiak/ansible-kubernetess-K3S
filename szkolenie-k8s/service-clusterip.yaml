@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-internal-service
+spec:
+  type: ClusterIP       # To jest domyślny typ (dostępny tylko wewnątrz klastra)
+  selector:
+    app: training-app   # <--- To jest NAJWAŻNIEJSZE. Musi pasować do etykiety Podów
+  ports:
+    - port: 80          # Na tym porcie serwis będzie nasłuchiwał
+      targetPort: 80    # Na ten port przekaże ruch do Poda
