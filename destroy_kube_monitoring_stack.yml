@@ -1,0 +1,34 @@
+---
+- name: Destroy kube_monitoring_stack (Prometheus Stack)
+  hosts: localhost
+  connection: local
+  become: false
+
+  vars:
+    kubeconfig_path: ./k3s-kubeconfig
+    helm_release_name: prometheus-stack
+    helm_namespace: monitoring
+
+  tasks:
+    - name: Odinstaluj release Helm prometheus-stack (jeśli istnieje)
+      ansible.builtin.command: >
+        helm uninstall {{ helm_release_name }}
+        --namespace {{ helm_namespace }}
+        --kubeconfig {{ kubeconfig_path }}
+      register: helm_uninstall_result
+      failed_when: >
+        helm_uninstall_result.rc != 0
+        and 'release: not found' not in helm_uninstall_result.stderr
+      changed_when: "'uninstalled' in helm_uninstall_result.stdout"
+      delegate_to: localhost
+      connection: local
+
+    - name: Usuń namespace monitoring (opcjonalnie)
+      ansible.builtin.command: >
+        kubectl --kubeconfig={{ kubeconfig_path }}
+        delete namespace {{ helm_namespace }}
+      register: ns_delete
+      failed_when: false
+      changed_when: "'deleted' in ns_delete.stdout"
+      delegate_to: localhost
+      connection: local

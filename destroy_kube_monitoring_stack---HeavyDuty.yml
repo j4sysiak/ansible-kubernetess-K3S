@@ -1,0 +1,49 @@
+---
+- name: Destroy kube_monitoring_stack (Prometheus Stack)
+  hosts: localhost
+  connection: local
+  become: false
+
+  vars:
+    kubeconfig_path: ./k3s-kubeconfig
+    helm_release_name: prometheus-stack
+    helm_namespace: monitoring
+
+  tasks:
+    - name: Odinstaluj release Helm prometheus-stack (jeśli istnieje)
+      ansible.builtin.command: >
+        helm uninstall {{ helm_release_name }}
+        --namespace {{ helm_namespace }}
+        --kubeconfig {{ kubeconfig_path }}
+      register: helm_uninstall_result
+      failed_when: >
+        helm_uninstall_result.rc != 0
+        and 'release: not found' not in helm_uninstall_result.stderr
+      changed_when: "'uninstalled' in helm_uninstall_result.stdout"
+      delegate_to: localhost
+      connection: local
+
+    - name: Usuń wszystkie obiekty Prometheus w namespace monitoring
+      ansible.builtin.command: >
+        kubectl --kubeconfig={{ kubeconfig_path }}
+        -n {{ helm_namespace }} delete prometheus --all
+      register: prometheus_delete
+      failed_when: false
+      changed_when: "'deleted' in prometheus_delete.stdout"
+      delegate_to: localhost
+      connection: local
+
+    - name: Usuń CRD Prometheus stack (opcjonalnie, pełny reset)
+      ansible.builtin.command: >
+        kubectl --kubeconfig={{ kubeconfig_path }} delete crd
+        prometheuses.monitoring.coreos.com
+        alertmanagers.monitoring.coreos.com
+        podmonitors.monitoring.coreos.com
+        probes.monitoring.coreos.com
+        servicemonitors.monitoring.coreos.com
+        thanosrulers.monitoring.coreos.com
+      register: crd_delete
+      failed_when: false
+      changed_when: "'deleted' in crd_delete.stdout"
+      delegate_to: localhost
+      connection: local

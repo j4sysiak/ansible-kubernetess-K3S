@@ -1,5 +1,5 @@
-# jesteśmy w katalogu roli k3s_master
-/home/jacek/dev/ansible-kubernetess-K3S/roles/k3s_master
+jesteśmy w katalogu roli k3s_master
+# cd /home/jacek/dev/ansible-kubernetess-K3S/roles/k3s_master
 
 # cd roles/k3s_master
 

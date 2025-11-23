@@ -19,3 +19,6 @@
     --namespace {{ helm_app_namespace }}
     --kubeconfig {{ kubeconfig_path }}
   changed_when: true
+  delegate_to: localhost
+  become: false
+  connection: local
