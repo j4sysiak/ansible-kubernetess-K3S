@@ -41,7 +41,7 @@ Używamy zasobu Kubernetes o nazwie Service, który tworzy stały punkt dostępu
 # kubectl apply -f service-clusterip.yaml
     service/my-internal-service created
 
-   Sprawdź, czy powstał:
+   Sprawdź, czy powstał servis typu ClusterIP:
 # kubectl get svc
     NAME                  TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
     kubernetes            ClusterIP   10.43.0.1    <none>        443/TCP   16h
@@ -55,9 +55,9 @@ Musimy wejść "do środka" klastra, żeby go sprawdzić.
 
   Uruchom ten jednorazowy "pod testowy", który da Ci terminal w środku klastra:
 # kubectl run curl-test --image=curlimages/curl -i --tty --rm -- sh
-    All commands and output from this session will be recorded in container logs, including credentials and sensitive information passed through the command prompt.
-    If you don't see a command prompt, try pressing enter.
-        ~ $ curl http://my-internal-service
+
+    $ curl http://my-internal-service
+ 
         <!DOCTYPE html>
         <html>
             <head>

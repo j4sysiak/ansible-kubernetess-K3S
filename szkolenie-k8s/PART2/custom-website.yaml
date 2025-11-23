@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-website-config
+data:
+  # To jest nazwa pliku, który powstanie w kontenerze
+  index.html: |
+    <html>
+    <head><title>Strona Firmowa</title></head>
+    <body>
+      <h1>Witaj Szefie!</h1>
+      <p>To jest strona wstrzyknieta przez ConfigMap.</p>
+    </body>
+    </html>
