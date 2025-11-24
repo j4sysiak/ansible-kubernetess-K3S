@@ -49,12 +49,13 @@ spec:
             name: produkcja-config # <--- WYMÓG: Podpięcie ConfigMapy
 
 ---
-# 3. Service - Łącznik wewnątrz klastra
+# 3. Service - Łącznik wewnątrz klastra  (ClusterIP)
 apiVersion: v1
 kind: Service
 metadata:
   name: produkcja-service
 spec:
+  type: ClusterIP       # To jest domyślny typ (dostępny tylko wewnątrz klastra)
   selector:
     app: produkcja
   ports:
