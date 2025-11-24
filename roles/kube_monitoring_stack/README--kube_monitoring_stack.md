@@ -12,6 +12,7 @@ community.kubernetes:2.0.1 was installed successfully
 $ helm version
 version.BuildInfo{Version:"v3.19.2", GitCommit:"8766e718a0119851f10ddbe4577593a45fadf544", GitTreeState:"clean", GoVersion:"go1.24.9"}
 
+
 *********************************************************************************************
 1) Upewnij się, że Twój klaster K3s i ingress-nginx działają.
    (Jeśli kontener jest zatrzymany. Uruchom go za pomocą:  # docker start k3s-master)
