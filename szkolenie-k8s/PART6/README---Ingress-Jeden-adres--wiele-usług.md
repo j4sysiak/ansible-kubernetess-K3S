@@ -193,20 +193,104 @@ To pozwoli nam natychmiast namierzyć błąd.
     banana   ClusterIP   10.43.145.85   <none>        5678/TCP   42m
 
 
+3. Sprawdź, czy Pody (aplikacje) żyją
+   Może Deployment się nie udał i nie ma do czego wysłać ruchu.
+# kubectl get pods
+# kubectl get pods -l app=apple -o wide
+    NAME                     READY   STATUS    RESTARTS   AGE    IP           NODE         NOMINATED NODE   READINESS GATES
+    apple-754df5984f-bkqzq   1/1     Running   0          48m    10.42.0.37   k3s-master   <none>           <none>
+
+# kubectl get pods -l app=banana -o wide
+    NAME                      READY   STATUS    RESTARTS   AGE   IP           NODE         NOMINATED NODE   READINESS GATES
+    banana-5b95d46c88-fkfn2   1/1     Running   0          48m   10.42.0.38   k3s-master   <none>           <none>
 
 
+4. Sprawdź status samego Ingressa
+   Zobaczmy, czy Ingress "zrozumiał" konfigurację i czy dostał adres IP.
+# kubectl describe ingress owocowy-ingress
+    Name:             owocowy-ingress
+    Labels:           <none>
+    Namespace:        default
+    Address:          172.17.0.2
+    Ingress Class:    nginx
+    Default backend:  <default>
+    Rules:
+      Host        Path  Backends
+      ----        ----  --------
+      *
+                  /apple      apple:5678 (10.42.0.37:5678)
+                  /banana     banana:5678 (10.42.0.38:5678)
+    Annotations:  <none>
+    Events:
+      Type    Reason  Age                From                      Message
+      ----    ------  ----               ----                      -------
+      Normal  Sync    37m (x2 over 38m)  nginx-ingress-controller  Scheduled for sync
 
 
+5. Sprawdź, gdzie nasłuchuje Ingress Controller:
+Musimy zobaczyć, jaki adres/port dostał Twój Btamkarz: Ingress Controller. 
+On znajduje się w innej przestrzeni nazw (ingress-nginx), dlatego nie widzieliśmy go wcześniej.
+# kubectl get svc -n ingress-nginx
+    NAME                                 TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                      AGE
+    ingress-nginx-controller             LoadBalancer   10.43.81.211   172.17.0.2    80:31896/TCP,443:32006/TCP   2d
+    ingress-nginx-controller-admission   ClusterIP      10.43.140.62   <none>        443/TCP                      2d
+
+Jeśli po wpisaniu kubectl get svc -n ingress-nginx zobaczysz przy ingress-nginx-controller status EXTERNAL-IP jako 172.17.0.2 (lub Pending -> 172.17.0.2), to znaczy,
+że Ingress Controller przejął ruch.
+Wtedy odśwież stronę http://localhost/banana w przeglądarce
 
 
+----------------------  
 
+To, co właśnie zrobiłeś, to esencja tego, jak działają nowoczesne strony internetowe i chmury. 
+Rozbijmy to na prostą analogię, żebyś "zakumał" ideę, a nie tylko komendy.
+Wyobraź sobie Duży Biurowiec.
+1. Problem bez Ingressa
+   Wcześniej (w Lab 3 z NodePort) każda aplikacja otwierała swoje własne "drzwi" na zewnątrz.
+   Aplikacja "Apple" otwierała drzwi nr 30007.
+   Aplikacja "Banana" otwierała drzwi nr 30008.
+   Klient (przeglądarka) musiał wiedzieć: "Żeby dostać jabłko, muszę iść do drzwi 30007". 
+   To jest niewygodne. Nikt nie chce wpisywać google.com:3421. Chcemy wpisywać po prostu adres.
 
+2. Rozwiązanie z Ingressem (Recepcja)
+   Ingress to Recepcjonista siedzący przy Głównym Wejściu (Port 80).
+   Oto co zbudowałeś:
+   Główne Wejście (LoadBalancer IP): 
+   To jest jedyny adres, który zna świat (Twoja przeglądarka). 
+   To jest Twój localhost przekierowany na 172.17.0.2.
+   Recepcjonista (Ingress Controller Nginx): 
+   To program, który stoi w drzwiach i wita każdego gościa. On nic nie produkuje, on tylko kieruje ruchem.
+   Instrukcja dla Recepcjonisty (Plik YAML ingress-routing.yaml): 
+   Dałeś recepcjoniście kartkę z zasadami:
+   "Jak ktoś pyta o Apple (/apple) -> wyślij go do pokoju nr 1."
+   "Jak ktoś pyta o Banana (/banana) -> wyślij go do pokoju nr 2."
 
+3. Ścieżka Twojego Kliknięcia
+   Kiedy wpisałeś w przeglądarce http://localhost/banana:
+   Ty: Pukasz do głównych drzwi biurowca (Port 80).
+   Nginx (Recepcjonista): 
+   Odbiera Twoje zapytanie. Patrzy na adres koperty: /banana.
+   Decyzja: Nginx zagląda do swojej ściągi (którą wgrałeś przez kubectl apply). 
+   Widzi: "Aha! Banany są w serwisie banana".
+   Przekierowanie: Nginx dzwoni do wewnętrznego serwisu banana (ClusterIP) i mówi: "Masz klienta".
+   Aplikacja: Aplikacja Banana odpowiada, a Nginx przekazuje tę odpowiedź Tobie.
+   Dlaczego to jest genialne?
+   Dzięki temu mechanizmowi:
+   Potrzebujesz tylko jednego publicznego adresu IP dla całego klastra (co oszczędza pieniądze w chmurze).
+   Możesz mieć pod tym adresem tysiące różnych stron (/sklep, /blog, /poczta albo sklep.domena.com, blog.domena.com).
+   Wszystkie certyfikaty SSL (kłódka w przeglądarce) konfigurujesz tylko raz – na Recepcji (Ingress), 
+   a nie w każdej aplikacji z osobna.
+   W skrócie: Zmieniłeś swój klaster z "dziurawego sera" (mnóstwo otwartych portów) w "elegancki biurowiec z jedną recepcją". 
+   To jest standard produkcyjny.
 
+4. Co dalej?
+   Teraz, gdy już rozumiesz podstawy Ingressa, możesz eksperymentować z bardziej zaawansowanymi funkcjami:
+   SSL/TLS: Dodaj certyfikaty, aby Twoje strony działały na HTTPS.
+   Load Balancing: Skonfiguruj reguły, które rozkładają ruch między wieloma instancjami aplikacji.
+   Autoryzacja: Dodaj mechanizmy uwierzytelniania na poziomie Ingressa.
+   Monitoring: Śledź ruch i wydajność za pomocą narzędzi monitorujących.
 
-
-
-
-
+5. Gratulacje! Opanowałeś kluczową technologię używaną w nowoczesnych aplikacjach webowych i chmurach. 
+   Teraz możesz budować skalow
 
 
