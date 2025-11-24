@@ -74,12 +74,61 @@ replicaset.apps/produkcja-app-6f54ff85dd     3         3         3       111s
 replicaset.apps/zombie-app-6db6d4d847        1         1         1       27h
 replicaset.apps/zombie-app-8b49b75fc         0         0         0       27h
 
+
+Sprawdź Deployment (czy wszystko OK):
+# kubectl get deployment produkcja-app
+    NAME            READY   UP-TO-DATE   AVAILABLE   AGE
+    produkcja-app   3/3     3            3           11m
+
+Sprawdź Pody (czy Deployment działa):
+# kubectl get pods -o wide
+    NAME                               READY   STATUS      RESTARTS        AGE    IP           NODE         NOMINATED NODE   READINESS GATES
+    apple-754df5984f-bkqzq             1/1     Running     0               112m   10.42.0.37   k3s-master   <none>           <none>
+    banana-5b95d46c88-fkfn2            1/1     Running     0               112m   10.42.0.38   k3s-master   <none>           <none>
+    memory-demo                        0/1     OOMKilled   9 (5m17s ago)   21m    10.42.0.40   k3s-master   <none>           <none>
+    my-webapp-5f56d9f4dd-6c8pt         1/1     Running     0               32h    10.42.0.23   k3s-master   <none>           <none>
+    my-webapp-5f56d9f4dd-sf7p7         1/1     Running     0               32h    10.42.0.24   k3s-master   <none>           <none>
+    my-webapp-5f56d9f4dd-vfm6b         1/1     Running     0               32h    10.42.0.25   k3s-master   <none>           <none>
+    my-webapp-custom-c6c5f6f44-78cs5   1/1     Running     0               29h    10.42.0.28   k3s-master   <none>           <none>
+    mysql-c7d44f448-rcvrp              1/1     Running     0               135m   10.42.0.36   k3s-master   <none>           <none>
+    produkcja-app-6f54ff85dd-28m7x     1/1     Running     0               12m    10.42.0.43   k3s-master   <none>           <none>
+    produkcja-app-6f54ff85dd-85t95     1/1     Running     0               12m    10.42.0.42   k3s-master   <none>           <none>
+    produkcja-app-6f54ff85dd-hj9j5     1/1     Running     0               12m    10.42.0.41   k3s-master   <none>           <none>
+    secure-pod                         1/1     Running     4 (52s ago)     28h    10.42.0.31   k3s-master   <none>           <none>
+    zombie-app-6db6d4d847-brtt9        1/1     Running     0               27h    10.42.0.33   k3s-master   <none>           <none>
+
+
 Czy są 3 pody?
 # kubectl get pods -l app=produkcja
     NAME                             READY   STATUS    RESTARTS   AGE
     produkcja-app-6f54ff85dd-28m7x   1/1     Running   0          2m37s
     produkcja-app-6f54ff85dd-85t95   1/1     Running   0          2m37s
     produkcja-app-6f54ff85dd-hj9j5   1/1     Running   0          2m37s
+
+Sprawdź, czy powstał servis typu ClusterIP:
+# kubectl get svc
+          NAME                             TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+          apple                            ClusterIP   10.43.88.0     <none>        5678/TCP       110m
+          banana                           ClusterIP   10.43.145.85   <none>        5678/TCP       110m
+          kubernetes                       ClusterIP   10.43.0.1      <none>        443/TCP        2d1h
+          my-internal-service              ClusterIP   10.43.3.73     <none>        80/TCP         32h
+          my-internal-service-custom       ClusterIP   10.43.117.2    <none>        80/TCP         29h
+          my-nodeport-service              NodePort    10.43.165.45   <none>        80:30007/TCP   32h
+          my-nodeport-service-custom-app   NodePort    10.43.203.42   <none>        80:30008/TCP   28h
+JEST----> produkcja-service                ClusterIP   10.43.84.153   <none>        80/TCP         14m
+
+Uruchom ten jednorazowy "pod testowy", który da Ci terminal w środku klastra:
+# kubectl run curl-test --image=curlimages/curl -i --tty --rm -- sh
+
+        $ curl http://produkcja-service
+                ~ $ curl http://produkcja-service
+                <!DOCTYPE html>
+                        <html>
+                                <head>
+                                        <title>Welcome to nginx!</title>
+                                [...]
+
+
 
 
 Czy Ingress widzi nasz adres IP?
