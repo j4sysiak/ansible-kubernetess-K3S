@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: banana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: banana
+  template:
+    metadata:
+      labels:
+        app: banana
+    spec:
+      containers:
+        - name: banana
+          image: hashicorp/http-echo
+          args:
+            - "-text=banana"  # <--- Tutaj przekazujemy argument!
+          ports:
+            - containerPort: 5678

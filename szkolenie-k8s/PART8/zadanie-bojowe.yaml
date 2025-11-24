@@ -1,0 +1,81 @@
+---
+# 1. ConfigMap - Tutaj trzymamy naszą stronę HTML
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: produkcja-config
+data:
+  index.html: |
+    <html>
+    <head><title>PRODUKCJA</title></head>
+    <body style="background-color: #e0f7fa;">
+      <h1>To jest produkcja</h1>
+      <p>Wdrozenie zakonczone sukcesem!</p>
+    </body>
+    </html>
+
+---
+# 2. Deployment - Aplikacja (3 repliki, Limity RAM)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: produkcja-app
+spec:
+  replicas: 3               # <--- WYMÓG: 3 repliki
+  selector:
+    matchLabels:
+      app: produkcja
+  template:
+    metadata:
+      labels:
+        app: produkcja
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              memory: "64Mi"  # <--- WYMÓG: Limit 64Mi RAM
+          volumeMounts:
+            # UWAGA: Montujemy to w podkatalogu 'produkcja', żeby pasowało do ścieżki w URL!
+            # Dzięki temu Nginx obsłuży żądanie /produkcja/index.html
+            - name: html-volume
+              mountPath: /usr/share/nginx/html/produkcja
+      volumes:
+        - name: html-volume
+          configMap:
+            name: produkcja-config # <--- WYMÓG: Podpięcie ConfigMapy
+
+---
+# 3. Service - Łącznik wewnątrz klastra
+apiVersion: v1
+kind: Service
+metadata:
+  name: produkcja-service
+spec:
+  selector:
+    app: produkcja
+  ports:
+    - port: 80
+      targetPort: 80
+
+---
+# 4. Ingress - Wystawienie na świat
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: produkcja-ingress
+spec:
+  ingressClassName: nginx   # <--- Kluczowe dla naszego setupu!
+  rules:
+    - http:
+        paths:
+          - path: /produkcja    # <--- WYMÓG: Ścieżka /produkcja
+            pathType: Prefix
+            backend:
+              service:
+                name: produkcja-service
+                port:
+                  number: 80
