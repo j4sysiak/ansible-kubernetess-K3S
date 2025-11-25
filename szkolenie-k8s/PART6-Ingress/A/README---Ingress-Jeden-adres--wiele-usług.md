@@ -74,9 +74,22 @@ Sprawdź serwisy:
 
 2. Stwórz ingress-routing.yaml:
 
+Sprawdź Ingress:
+# kubectl get ingress
+
+Usuń stare Ingressy (jeśli istnieją):
+# kubectl delete ingress owocowy-ingress
+# kubectl delete ingress produkcja-ingress
+# kubectl delete ingress color-ingress
+
 3. Zadanie dla Ciebie:
 # kubectl apply -f ingress-routing.yaml
     ingress.networking.k8s.io/owocowy-ingress created
+
+Sprawdź Ingress:
+# kubectl get ingress
+    NAME              CLASS   HOSTS   ADDRESS      PORTS   AGE
+    owocowy-ingress   nginx   *       172.17.0.2   80      5s
 
 Otwórz przeglądarkę w Windowsie.
 Wejdź na: http://localhost/apple -> powinieneś zobaczyć tekst "apple".
@@ -85,7 +98,8 @@ Właśnie skonfigurowałeś profesjonalny routing HTTP!
 
 
 --------------------------------------------------------------------------------------------------------------------------
-To jest bardzo czujna i trafna uwaga! Bardzo dobrze, że to zauważyłeś. Masz rację – ClusterIP jest niedostępny z zewnątrz.
+To jest bardzo czujna i trafna uwaga! Bardzo dobrze, że to zauważyłeś. 
+Masz rację – ClusterIP jest niedostępny z zewnątrz.
 
 Ale... w tym przypadku to zadziała. Dlaczego?
 
@@ -97,11 +111,12 @@ Wyobraź sobie to jak biurowiec:
 
 Twoje aplikacje (apple i banana) siedzą w biurach numer 5 i 6. 
 Drzwi do tych biur są zamknięte dla osób z ulicy. 
-To jest ClusterIP. Nikt z zewnątrz (Windows) nie wejdzie bezpośrednio do biura nr 5.
+To jest ClusterIP - nikt z zewnątrz (Windows) nie wejdzie bezpośrednio do biura nr 5.
 
 Ingress Controller to recepcjonista siedzący w głównym holu. 
 Główne wejście do budynku (Port 80) jest otwarte dla wszystkich. 
-Docker przekierował to wejście na Twój localhost.
+Docker przekierował to wejście na Twój localhost - dlatego, że wpisując http://localhost w przeglądarce, trafiasz do tego holu.
+ponieważ w Dockerze przekierowaliśmy port 80 kontenera K3s na port 80 hosta Windowsa - 80:80 \
 
 Ty (Przeglądarka) wchodzisz do głównego holu (localhost:80) i mówisz recepcjoniście: "Chcę do działu /apple".
 
@@ -113,7 +128,7 @@ On idzie do biura nr 5 (przez sieć wewnętrzną klastra), bierze odpowiedź i p
 Twój ruch wygląda tak:
 
 Windows (Przeglądarka): http://localhost/apple
-⬇️ (Port Forwarding Dockera)
+⬇️ (Port Forwarding Dockera) - Docker przekierowuje ruch do kontenera K3s, bo zrobiłeś -p 80:80 \
 
 K3s Container (Port 80): Tu nasłuchuje Ingress Controller (np. Nginx).
 ⬇️ (Routing wewnątrz klastra - to kluczowy moment!)
@@ -123,25 +138,46 @@ Serwis apple (ClusterIP): Ingress Controller łączy się z tym wewnętrznym IP.
 
 Pod apple: Aplikacja odpowiada.
 
-Wniosek
-
+Wniosek:
+--------
 Dlatego właśnie w Kubernetesie rzadko używa się NodePort czy LoadBalancer dla każdej małej aplikacji.
-Wystawia się tylko jednego Ingress Controllera "na świat" (np. przez LoadBalancer), a wszystkie aplikacje pod spodem są ukryte jako ClusterIP. Ingress Controller działa jak "wtyczka", która łączy świat zewnętrzny z prywatną siecią klastra.
+Wystawia się tylko jednego Ingress Controllera "na świat" (np. przez LoadBalancer), 
+ a wszystkie aplikacje pod spodem są ukryte jako ClusterIP. 
+ Ingress Controller działa jak "wtyczka", która łączy świat zewnętrzny z prywatną siecią klastra.
 
 Więc śmiało, odpalaj! To zadziała właśnie dzięki temu mechanizmowi pośredniczenia.
 
+ale przecież Ingress Controller czyta nagłówek Host, a my go nie ustawiliśmy?
+Masz rację, w naszym przykładzie nie używamy nagłówka Host do routingu, tylko ścieżki (/apple i /banana).
+Dlatego Ingress Controller nie potrzebuje nagłówka Host, aby wiedzieć, gdzie skierować ruch.
+W naszym pliku ingress-routing.yaml zdefiniowaliśmy reguły oparte na ścieżkach, więc Ingress działa poprawnie bez dodatkowych nagłówków.
+Gdzie jest to miejsce w pliku YAML?
+W sekcji rules:
+  rules:
+  - http:
+      paths:
 
 
 --------------------------------------------------------------------------------------------------------------------------
 Spróbuj też z wiersza poleceń (WSL):
 # curl http://localhost/apple
     apple   
+lub z wewnątrz kontenera K3s:
+# docker exec -it k3s-master curl http://localhost/apple
+    apple
+
 # curl http://localhost/banana
     banana
+lub z wewnątrz kontenera K3s:
+# docker exec -it k3s-master curl http://localhost/banana
+    banana
 
-Gratulacje! Udało Ci się skonfigurować Ingress w Kubernetesie, umożliwiając dostęp do wielu usług pod jednym adresem IP na podstawie ścieżek URL.
+Gratulacje! 
+Udało Ci się skonfigurować Ingress w Kubernetesie, umożliwiając dostęp do wielu usług 
+              pod jednym adresem IP na podstawie ścieżek URL.
 
-----------------   jak masz 404  w przeglądarce ----------------------
+
+----------------  ale, jak masz 404  w przeglądarce ----------------------
 To jest bardzo dobra wiadomość, chociaż wygląda jak błąd!
 Komunikat 404 Not Found oraz podpis nginx/1.29.3 oznaczają, że:
 Sieć działa: Twój ruch z Windowsa przeszedł przez Dockera i dotarł do Klastra.

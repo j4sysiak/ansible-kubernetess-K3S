@@ -1,0 +1,71 @@
+---
+# Aplikacja BLUE
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blue-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blue
+  template:
+    metadata:
+      labels:
+        app: blue
+    spec:
+      containers:
+        - name: echo
+          image: hashicorp/http-echo
+          args:
+            - "-text=JESTEM NIEBIESKI"
+            - "-listen=:5678"
+          ports:
+            - containerPort: 5678
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blue-svc
+spec:
+  selector:
+    app: blue
+  ports:
+    - port: 80
+      targetPort: 5678
+
+---
+# Aplikacja GREEN
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: green-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: green
+  template:
+    metadata:
+      labels:
+        app: green
+    spec:
+      containers:
+        - name: echo
+          image: hashicorp/http-echo
+          args:
+            - "-text=JESTEM ZIELONY"
+            - "-listen=:5678"
+          ports:
+            - containerPort: 5678
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: green-svc
+spec:
+  selector:
+    app: green
+  ports:
+    - port: 80
+      targetPort: 5678
