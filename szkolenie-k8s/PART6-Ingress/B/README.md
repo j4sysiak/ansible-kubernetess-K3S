@@ -77,6 +77,29 @@ Sprawdź Ingress:
     color-ingress   nginx   blue.local,green.local   172.17.0.2   80      5m11s
 
 -------------------------   uderzenie bezpośrednio w IP Ingressa   ----------------------------
+W skrócie:
+W Twoim środowisku (Windows + Docker Desktop) bezpośredni adres IP kontenera (172.17.0.2) jest nieosiągalny z poziomu WSL.
+To jest specyfika działania Docker Desktop na Windowsie. 
+Docker działa w jednej wirtualnej maszynie, a Twoje Ubuntu (WSL) w drugiej. 
+Domyślnie nie ma między nimi "kabla", który pozwalałby na ruch do prywatnych adresów IP kontenerów (172.x.x.x). 
+Docker Desktop "wystawia" usługi tylko przez localhost (Port Forwarding).
+Dowód (Test wewnątrz)
+Żebyś miał 100% pewności, że Ingress i adres IP działają poprawnie, wejdźmy do kontenera i tam wykonajmy to polecenie (bo tam sieć lokalna działa):
+
+# docker exec -it k3s-master curl -H "Host: blue.local" http://172.17.0.2
+    JESTEM NIEBIESKI
+# docker exec -it k3s-master curl -H "Host: green.local" http://172.17.0.2
+    JESTEM ZIELONY
+Wyjaśnienie:
+Tutaj wszystko działa, bo jesteśmy "wewnątrz" tej samej sieci co Ingress Controller.
+Dowód (Test z WSL Ubuntu)
+Teraz spróbujmy to samo z WSL Ubuntu (Twojego terminala):
+# curl -H "Host: blue.local" http:// http://172.17.0.2
+    curl: (3) URL rejected: No host part in the URL
+    curl: (7) Failed to connect to 172.17.0.2 port 80 after 2848 ms: Couldn't connect to server
+
+Wyjaśnienie:
+------------
 Skoro Twój Ingress ma adres `IP: 172.17.0.2`, to oznacza, że nasłuchuje on na tym adresie wewnątrz sieci Dockera.
 Ale ja chcę uderzyć bezpośrednio w adres IP kontenera  `172.17.0.2`, pomijając localhost. 
 To jest bardzo "czyste" podejście sieciowe.
@@ -88,7 +111,8 @@ Przedstawić się (w nagłówku HTTP) jako np: `blue.local`
 # docker exec -it k3s-master curl -H "Host: blue.local" http://172.17.0.2
     JESTEM NIEBIESKI
  
-Wyjaśnienie:
+Wyjaśnienie części w curl:
+--------------------------
 http://172.17.0.2: To mówi curlowi: "Wyślij pakiet TCP na ten konkretny adres IP".
 -H "Host: blue.local": To mówi Ingressowi: "Wiem, że przyszedłem na adres IP, 
             ale poproszę o stronę blue.local". 
