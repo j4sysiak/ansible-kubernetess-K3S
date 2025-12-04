@@ -47,10 +47,10 @@ start usługi ssh i sprawdź jej status:
     * sshd is running
 
 -i inventory.ini
-# ************************** only once *****************************************
+# ************************** only once ********************************************************************
 # cd /home/jacek/dev/ansible-kubernetess-K3S 
 # ansible-playbook -i inventory/hosts.ini bootstrap_k3s.yml         // Bootstrap K3s container with Python
-# ******************************************************************************
+# *********************************************************************************************************
    
 Natychmiast po tym, uruchom ponownie główny playbook (nie bootstrap, tylko ten główny):
 # ansible-playbook -i inventory/hosts.ini k3s_master_destroy.yml

@@ -1,0 +1,60 @@
+---
+# 1. Aplikacja (zwykła, bez szyfrowania w środku)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: secure-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: secure
+  template:
+    metadata:
+      labels:
+        app: secure
+    spec:
+      containers:
+        - name: echo
+          image: hashicorp/http-echo
+          args:
+            - "-text=JESTEM BEZPIECZNY (HTTPS)!"
+          ports:
+            - containerPort: 5678
+---
+# 2. Serwis
+apiVersion: v1
+kind: Service
+metadata:
+  name: secure-svc
+spec:
+  selector:
+    app: secure
+  ports:
+    - port: 80
+      targetPort: 5678
+---
+# 3. INGRESS Z SSL
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: secure-ingress
+spec:
+  ingressClassName: nginx
+  # --- TUTAJ DZIEJE SIĘ MAGIA SSL ---
+  tls:
+    - hosts:
+        - secure.local
+      secretName: moj-sekret-ssl  # <--- Wskazujemy sekret z Kroku 2
+  # ----------------------------------
+  rules:
+    - host: secure.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: secure-svc
+                port:
+                  number: 80

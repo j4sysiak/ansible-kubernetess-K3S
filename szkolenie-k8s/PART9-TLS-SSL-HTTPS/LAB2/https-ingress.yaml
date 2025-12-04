@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sni-ingress
+spec:
+  ingressClassName: nginx
+  tls:
+    # Sekcja dla BANKU
+    - hosts:
+        - bank.local
+      secretName: bank-tls    # <--- Użyj certyfikatu bankowego
+    # Sekcja dla SKLEPU
+    - hosts:
+        - sklep.local
+      secretName: sklep-tls   # <--- Użyj certyfikatu sklepowego
+  rules:
+    - host: bank.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bank-svc
+                port:
+                  number: 80
+    - host: sklep.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sklep-svc
+                port:
+                  number: 80

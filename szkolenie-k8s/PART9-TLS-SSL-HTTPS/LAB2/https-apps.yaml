@@ -1,0 +1,68 @@
+---
+# Aplikacja BANK
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bank-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bank
+  template:
+    metadata:
+      labels:
+        app: bank
+    spec:
+      containers:
+        - name: echo
+          image: hashicorp/http-echo
+          args:
+            - "-text=WITAJ W BANKU (Szyfrowanie dziala!)"
+          ports:
+            - containerPort: 5678
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bank-svc
+spec:
+  selector:
+    app: bank
+  ports:
+    - port: 80
+      targetPort: 5678
+---
+# Aplikacja SKLEP
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sklep-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sklep
+  template:
+    metadata:
+      labels:
+        app: sklep
+    spec:
+      containers:
+        - name: echo
+          image: hashicorp/http-echo
+          args:
+            - "-text=WITAJ W SKLEPIE (Tu tez jest bezpiecznie!)"
+          ports:
+            - containerPort: 5678
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sklep-svc
+spec:
+  selector:
+    app: sklep
+  ports:
+    - port: 80
+      targetPort: 5678
