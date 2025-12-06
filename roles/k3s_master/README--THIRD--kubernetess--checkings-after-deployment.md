@@ -17,6 +17,12 @@ jeżeli zrestartowałeś kontener Dockera (np. restart laptopa), uruchom "kubect
     nohup /usr/local/bin/k3s server --write-kubeconfig-mode 644 > /var/log/k3s.log 2>&1 &
     (trzeba poczekać minutę lub dwie na pełne uruchomienie k3s)
     exit
+
+Bash - diagnostyka i naprawa kubectl -> k3s
+Czy KUBECONFIG jest ustawione?
+# echo "KUBECONFIG=$KUBECONFIG"
+
+
 a to umozliwi użycie k3s kubectl poza dockerowym kontenerem, czyli na local hoście.
 # export KUBECONFIG=$PWD/k3s-kubeconfig
 sprawdź pody w klastrze k3s:

@@ -1,0 +1,32 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-wear-watch
+  annotations:
+    # Ważne: w szkoleniu często tego nie ma, ale w nowoczesnych Ingressach
+    # trzeba wyczyścić ścieżkę, żeby aplikacja nie dostała "/wear" w zapytaniu,
+    # tylko czysty "/" (jeśli aplikacja tego nie obsługuje).
+    # W naszym przypadku http-echo wyświetla tekst niezależnie od ścieżki,
+    # więc to jest opcjonalne, ale w produkcji kluczowe.
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx   # <--- To jest niezbędne w Twoim klastrze K3s
+  rules:
+    - host: www.my-online-store.com   # <--- Domena ze szkolenia
+      http:
+        paths:
+          - path: /wear
+            pathType: Prefix
+            backend:
+              service:
+                name: wear-service
+                port:
+                  number: 80
+          - path: /watch
+            pathType: Prefix
+            backend:
+              service:
+                name: video-service
+                port:
+                  number: 80

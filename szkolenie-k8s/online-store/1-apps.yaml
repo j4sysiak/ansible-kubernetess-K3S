@@ -1,0 +1,71 @@
+---
+# --- Aplikacja 1: WEAR (Ubrania) ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wear-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wear
+  template:
+    metadata:
+      labels:
+        app: wear
+    spec:
+      containers:
+        - name: wear-app
+          image: hashicorp/http-echo
+          args:
+            - "-text=Witaj w dziale WEAR (Ubrania) - Kup sobie koszulke!"
+            - "-listen=:5678"
+          ports:
+            - containerPort: 5678
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wear-service
+spec:
+  selector:
+    app: wear
+  ports:
+    - port: 80
+      targetPort: 5678
+
+---
+# --- Aplikacja 2: VIDEO (Streaming) ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: video-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: video
+  template:
+    metadata:
+      labels:
+        app: video
+    spec:
+      containers:
+        - name: video-app
+          image: hashicorp/http-echo
+          args:
+            - "-text=Witaj w dziale VIDEO (Streaming) - Ogladaj filmy!"
+            - "-listen=:5678"
+          ports:
+            - containerPort: 5678
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: video-service
+spec:
+  selector:
+    app: video
+  ports:
+    - port: 80
+      targetPort: 5678
