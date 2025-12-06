@@ -1,0 +1,70 @@
+# --- 1. UPRAWNIENIA (RBAC) - Tego brakowało w filmie ---
+# Nginx musi mieć prawo "pytać" K8s o serwisy i pody.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ingress-role
+rules:
+  - apiGroups: ["", "networking.k8s.io"]
+    resources: ["configmaps", "endpoints", "nodes", "pods", "secrets", "services", "ingresses", "ingressclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses/status"]
+    verbs: ["update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ingress-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ingress-role
+subjects:
+  - kind: ServiceAccount
+    name: ingress-serviceaccount
+    namespace: ingress-space
+---
+# --- 2. POPRAWIONY DEPLOYMENT (Nowszy Obraz) ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-ingress-controller
+  namespace: ingress-space
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: nginx-ingress
+  template:
+    metadata:
+      labels:
+        name: nginx-ingress
+    spec:
+      serviceAccountName: ingress-serviceaccount
+      containers:
+        - name: nginx-ingress-controller
+          # Używamy oficjalnego, nowszego obrazu, który działa na K3s
+          image: registry.k8s.io/ingress-nginx/controller:v1.8.1
+          args:
+            - /nginx-ingress-controller
+            # Wskazujemy naszą klasę (żeby nie gryzł się z wbudowanym w K3s Traefikiem)
+            - --ingress-class=nginx-manual
+            - --configmap=$(POD_NAMESPACE)/nginx-configuration
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+            - name: http
+              containerPort: 80
+            - name: https
+              containerPort: 443
