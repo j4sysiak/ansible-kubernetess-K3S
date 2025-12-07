@@ -1,0 +1,58 @@
+# 1. Aplikacja
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auto-ssl-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auto-ssl
+  template:
+    metadata:
+      labels:
+        app: auto-ssl
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+---
+# 2. Serwis
+apiVersion: v1
+kind: Service
+metadata:
+  name: auto-ssl-svc
+spec:
+  selector:
+    app: auto-ssl
+  ports:
+    - port: 80
+      targetPort: 80
+---
+# 3. INGRESS (Tu dzieje się magia)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: auto-ssl-ingress
+  annotations:
+    # TA LINIJKA URUCHAMIA ROBOTA:
+    cert-manager.io/cluster-issuer: "selfsigned-issuer"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - auto.local
+      secretName: automat-tls-secret  # <--- Tego sekretu NIE MA. Cert-Manager go stworzy!
+  rules:
+    - host: auto.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: auto-ssl-svc
+                port:
+                  number: 80

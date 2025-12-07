@@ -2,6 +2,17 @@ Krok 1: Generowanie Certyfikatów (Twoja "Kłódka")
 Musimy stworzyć certyfikat dla domeny passwords.local
 Bez tego Vaultwarden nie pozwoli Ci się zalogować.
 
+najpierw instalujemy NGINX Ingress Controller (jeśli jeszcze go nie masz):
+
+# helm repo update
+
+# helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+--namespace ingress-nginx \
+--create-namespace \
+--set controller.service.type=LoadBalancer \
+--set controller.allowSnippetAnnotations=true
+
+
 1. Klucz prywatny
 # openssl genrsa -out tls.key 2048
 
