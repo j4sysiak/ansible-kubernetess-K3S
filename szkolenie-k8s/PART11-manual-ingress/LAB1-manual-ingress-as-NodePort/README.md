@@ -1,5 +1,9 @@
 Ingress Controler om NGINX
---------------------------
+
+-----------------------------------------------------------------------
+czyli opowieść, z jakich "części" składa się recepcjonista (Pod + Service + ConfigMap).
+-----------------------------------------------------------------------
+
 To ćwiczenie pokazuje, jak zbudować Ingress Controller od zera, tworząc ręcznie wszystkie wymagane obiekty Kubernetes.
 Stwórzmy nowy katalog, żeby nie pomieszać tego z poprzednimi ćwiczeniami
 
@@ -23,8 +27,17 @@ Stwórz plik:  2-deployment.yaml
 Krok 3: Serwis (Wystawienie na świat)
 Na koniec (ok. 12 minuty), instruktor wyjaśnia, że sam Deployment jest niedostępny z zewnątrz. 
 Potrzebujemy Serwisu typu NodePort, żeby "otworzyć dziurę" w klastrze.
-Stwórz plik: 3-service.yaml 
+Stwórz plik: 3-service.yaml
 
+sprzątanie:
+Upewnij się, że masz czyste środowisko (jeśli nie posprzątałeś wcześniej):
+1. Usuń całą przestrzeń nazw (Pody, Serwisy, Deploymenty)
+# kubectl delete namespace ingress-space
+
+2. Usuń globalne uprawnienia (RBAC)
+   Te obiekty nie mieszkają w żadnym namespace, więc nie znikną same:
+# kubectl delete clusterrolebinding ingress-role-binding
+# kubectl delete clusterrole ingress-role
 
 Uruchomienie i Weryfikacja
 Teraz możesz to wdrożyć, żeby zobaczyć, jak te komponenty wstają "ręcznie":
@@ -54,6 +67,7 @@ Sprawdź, co powstało:
     replicaset.apps/nginx-ingress-controller-6bff97ddbb   1         1         0       55s
 
 
+# kubectl get pods -n ingress-space -w  (Flaga -w pozwoli Ci obserwować proces na żywo).
 
 
 
@@ -64,24 +78,29 @@ W filmie instruktor używa obrazu "k8s.gcr.io/ingress-nginx/controller:v1.2.1",
 który może być niedostępny w Twoim środowisku.
 Aby to naprawić:
 
-Można to sprawdzić i naprawić! Błąd ImagePullBackOff oznacza, że Kubernetes próbuje pobrać ten konkretny obraz (0.21.0), ale mu się nie udaje.
+# kubectl describe pod -n ingress-space nginx-ingress-controller-6bff97ddbb-c6pgw
+
+Można to sprawdzić i naprawić! Błąd ImagePullBackOff oznacza, 
+       że Kubernetes próbuje pobrać ten konkretny obraz (0.21.0), ale mu się nie udaje.
 Dlaczego?
 Szkolenie, które oglądasz, ma już kilka lat. W świecie IT to wieczność.
 Stary obraz zniknął: Repozytorium quay.io mogło usunąć tak starą wersję.
-Niekompatybilność: Nawet jakbyś go pobrał, ten stary Nginx (wersja 0.21) nie zadziałałby na Twoim nowym K3s (wersja 1.30+), bo używa starych zapytań do API, które już nie istnieją.
+Niekompatybilność: 
+Nawet jakbyś go pobrał, ten stary Nginx (wersja 0.21) nie zadziałałby na Twoim nowym K3s (wersja 1.30+), 
+      bo używa starych zapytań do API, które już nie istnieją.
 Aby to naprawić i sprawić, by zaświeciło się na zielono (Running), musimy zrobić dwie rzeczy:
 Użyć nowszego obrazu (wspieranego przez Google/Kubernetes).
-Dodać brakujące uprawnienia (RBAC), o których instruktor nie wspomniał w tej minucie (lub pominął dla uproszczenia), a bez których Nginx i tak by się wyłożył zaraz po pobraniu obrazu.
-Przygotowałem dla Ciebie plik naprawczy 4-fix-everything.yaml. Zawiera on działający obraz i niezbędne uprawnienia.
+Dodać brakujące uprawnienia (RBAC), o których instruktor nie wspomniał w tej minucie (lub pominął dla uproszczenia), 
+       a bez których Nginx i tak by się wyłożył zaraz po pobraniu obrazu.
+Przygotowałem dla Ciebie plik naprawczy 4-fix-everything.yaml. 
+Zawiera on działający obraz i niezbędne uprawnienia.
 Naprawa w jednym kroku
 Stwórz w katalogu manual-ingress plik 4-fix-everything.yaml:
 
 Uruchom naprawę
-# cd LAB2-FIX
+# cd LAB1-FIX
 # kubectl apply -f 4-fix-everything.yaml
     deployment.apps/nginx-ingress-controller configured
-
-
 
 
 Weryfikacja
@@ -123,16 +142,5 @@ Service (okno na świat).
 Co robimy dalej?
 Ponieważ ten "manualny" Ingress Controller był tylko ćwiczeniem edukacyjnym i działa w osobnej przestrzeni nazw (ingress-space), proponuję go teraz posprzątać.
 
-
-
-sprzzątanie:
-1. Usuń całą przestrzeń nazw (Pody, Serwisy, Deploymenty)
-# kubectl delete namespace ingress-space
  
-2. Usuń globalne uprawnienia (RBAC)
-   Te obiekty nie mieszkają w żadnym namespace, więc nie znikną same:
-# kubectl delete clusterrolebinding ingress-role-binding
-# kubectl delete clusterrole ingress-role
-
-
 

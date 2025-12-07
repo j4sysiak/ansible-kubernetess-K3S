@@ -4,15 +4,15 @@ metadata:
   name: ingress-service
   namespace: ingress-space
 spec:
-  type: NodePort # W szkoleniu używają NodePort dla przykładu on-premise
+  type: LoadBalancer  # <--- ZMIANA: Z NodePort na LoadBalancer
   ports:
-    - port: 80
+    - port: 80        # <--- Nasłuchujemy na głównym porcie HTTP
       targetPort: 80
       protocol: TCP
       name: http
-    - port: 443
+    - port: 443       # <--- Nasłuchujemy na głównym porcie HTTPS
       targetPort: 443
       protocol: TCP
       name: https
   selector:
-    name: nginx-ingress # Musi pasować do labeli w Deploymencie
+    name: nginx-ingress

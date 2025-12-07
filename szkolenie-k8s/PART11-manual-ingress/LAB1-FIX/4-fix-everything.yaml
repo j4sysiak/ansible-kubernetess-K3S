@@ -28,7 +28,7 @@ subjects:
     name: ingress-serviceaccount
     namespace: ingress-space
 ---
-# --- 2. POPRAWIONY DEPLOYMENT (Nowszy Obraz) ---
+# --- 2. POPRAWIONY DEPLOYMENT (Nowszy Obraz) --- nginx-ingress-controller
 apiVersion: apps/v1
 kind: Deployment
 metadata:

@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ingress-space
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-configuration
+  namespace: ingress-space
+data:
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ingress-serviceaccount
+  namespace: ingress-space
+---
+# --- DODANO: Uprawnienia (RBAC) ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ingress-role
+rules:
+  - apiGroups: ["", "networking.k8s.io"]
+    resources: ["configmaps", "endpoints", "nodes", "pods", "secrets", "services", "ingresses", "ingressclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses/status"]
+    verbs: ["update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ingress-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ingress-role
+subjects:
+  - kind: ServiceAccount
+    name: ingress-serviceaccount
+    namespace: ingress-space
