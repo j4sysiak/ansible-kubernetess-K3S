@@ -1,4 +1,6 @@
 szkolenia prowadzonego przez Mumshada Mannambetha (z kursu KodeKloud).
+https://www.youtube.com/watch?v=GhZi4DxaxxE&t=95s
+do 10 min.
 ----------------------------------------------------------------------
 
 To klasyczny przykład "My Online Store".
@@ -11,7 +13,8 @@ Ingress ma rozdzielać ruch do tych dwóch serwisów na podstawie URL.
 Przygotowałem dla Ciebie gotowy kod, który odwzorowuje ten scenariusz w Twoim klastrze K3s. 
 Użyjemy prostych obrazów, które będą symulować te aplikacje, żebyś widział efekt.
 
-Krok 1: Aplikacje Backendowe (Wear & Video)
+Krok 1: 
+Aplikacje Backendowe (Wear & Video)
 Stwórz plik: 1-apps.yaml
 W tym pliku definiujemy Deploymenty i Serwisy dla obu "działów" sklepu. 
 Zauważ, że Serwisy są typu ClusterIP (domyślnie), bo nie chcemy ich wystawiać bezpośrednio – dostęp ma być tylko przez Ingress.

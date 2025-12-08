@@ -23,17 +23,19 @@ Jeśli zapomnisz dodać ingressClassName: nginx (lub ustawisz złą klasę), Tw�
       może próbować przejąć ruch, ale ponieważ siedzi na "tylnym wejściu" (innym porcie), w przeglądarce nic nie zadziała. 
 To prowadzi do trudnych do wykrycia błędów typu: "Wszystko wgrałem dobrze, a strona nie działa".
 
--------------------------
+------------------------- moje pytanie -------------------------------------
 ale jednak. a nie możemy uzywać tego kontrolera zamiast tego z Helma ?
--------------------------
+----------------------------------------------------------------------------
 Oczywiście, że możemy!
-Jeśli chcesz używać tego ręcznie stworzonego Ingress Controllera zamiast tego z Helma/K3s, to jak najbardziej możesz to zrobić.
+Jeśli chcesz używać tego ręcznie stworzonego `Ingress Controllera` zamiast tego z Helma/K3s, 
+                   to jak najbardziej możesz to zrobić.
 Musisz jednak pamiętać o kilku rzeczach:
 1. Usunięcie Helm Nginx Ingress Controllera:
 Musisz usunąć ten zainstalowany przez Helma, aby uniknąć konfliktów.
 Możesz to zrobić za pomocą polecenia Helm uninstall.
 2. Ustawienie IngressClass:
-Upewnij się, że wszystkie Twoje zasoby Ingress mają ustawioną właściwość ingressClassName na nginx (lub inną nazwę, którą nadałeś swojemu Ingress Controllerowi).
+Upewnij się, że wszystkie Twoje zasoby Ingress mają ustawioną właściwość ingressClassName na nginx
+                                         (lub inną nazwę, którą nadałeś swojemu Ingress Controllerowi).
 3. Monitorowanie:
 Regularnie sprawdzaj, czy Twój ręcznie zainstalowany Ingress Controller działa poprawnie i czy nie ma konfliktów z innymi zasobami w klastrze.
 Podsumowując, tak, możesz używać ręcznie zainstalowanego Ingress Controllera zamiast tego z Helma/K3s, ale musisz być świadomy potencjalnych konfliktów i zarządzać nimi odpowiednio.
@@ -68,38 +70,42 @@ Jeśli wolisz spokój i stabilność do kolejnych lekcji, zostaw tak jak jest (c
 
 -------------------------
 PLAN: Awansujemy Ręczny Kontroler na Szefa
-Zakładam, że nie usunąłeś jeszcze namespace ingress-space.
+Zakładam, że nie usunąłeś jeszcze namespace: `ingress-space`.
 
-Krok 1: Pozbywamy się konkurencji
-Musimy zwolnić port 80. Jeśli masz zainstalowany ingress przez Helm (w namespace ingress-nginx lub default), usuń go.
+Krok 1: 
+Pozbywamy się konkurencji
+Musimy zwolnić port 80. 
+Jeśli masz zainstalowany ingress przez Helm (w namespace `ingress-nginx` lub `default`), usuń go.
 # kubectl get pods -n ingress-space
     NAME                                        READY   STATUS    RESTARTS   AGE
     nginx-ingress-controller-5b869c5c9c-dbgcf   1/1     Running   0          67m
 
 
-Musisz usunąć stary Ingress Controller, który zainstalowaliśmy wcześniej (prawdopodobnie przez Helm). 
+Musisz usunąć stary `Ingress Controller`, który zainstalowaliśmy wcześniej (prawdopodobnie przez Helm). 
 On teraz "okupuje" port 80 jako LoadBalancer.
 Oto jak to zrobić krok po kroku, bezpiecznie i czysto:
-Krok 1: Sprawdź, co dokładnie blokuje port
+
+Krok 1: 
+Sprawdź, co dokładnie blokuje port
 Wpisz tę komendę, aby zobaczyć wszystkie serwisy typu LoadBalancer w całym klastrze:
 Sprawdź, czy coś innego działa jako LoadBalancer
 # kubectl get svc -A | grep LoadBalancer
     ingress-nginx   ingress-nginx-controller  LoadBalancer   10.43.81.211    172.17.0.2    80:31896/TCP,443:32006/TCP     14d
 
 To nam mówi dwie rzeczy:
-Nazwa serwisu (np. ingress-nginx-controller).
-Namespace (przestrzeń nazw), w której siedzi (np. ingress-nginx lub default).
+Nazwa serwisu (np. `ingress-nginx-controller`).
+Namespace (przestrzeń nazw), w której siedzi (np. `ingress-nginx` lub `default`).
 
 Metoda B: "Opcja Nuklearna" (Najszybsza)
-Jeśli Ingress Controller siedzi w swoim własnym namespace (zazwyczaj ingress-nginx), 
+Jeśli `Ingress Controller` siedzi w swoim własnym namespace (zazwyczaj `ingress-nginx`), 
        możesz po prostu usunąć cały ten namespace. 
 Kubernetes posprząta wszystko, co w nim jest.
 # kubectl delete namespace ingress-space
     namespace "ingress-space" deleted
 
 Metoda A: "Opcja Precyzyjna" (Jeśli nie chcesz usuwać całego namespace)
-Jeśli chcesz być bardziej precyzyjny i usunąć tylko ten konkretny Ingress Controller, wykonaj te kroki:
-Znajdź namespace, w którym siedzi Ingress Controller (np. ingress-nginx).
+Jeśli chcesz być bardziej precyzyjny i usunąć tylko ten konkretny `Ingress Controller`, wykonaj te kroki:
+Znajdź namespace, w którym siedzi `Ingress Controller` (np. `ingress-nginx`).
 Przełącz się na ten namespace:
 # kubectl config set-context --current --namespace=ingress-nginx
 Usuń ten serwis LoadBalancer i deployment (jeśli istnieje)
@@ -111,10 +117,10 @@ Metoda A: Przez Helm (Najczystsza)
 Jeśli instalowaliśmy to przez Helm (a tak robiliśmy w roli Ansible), najlepiej odinstalować to też Helmem.
 Zobacz listę zainstalowanych pakietów Helm:
 # helm list -A
-    NAME                    NAMESPACE       REVISION        UPDATED                                 STATUS  CHART                           APP VERSION
-    prometheus-stack        monitoring      1               2025-11-22 20:46:49.771500182 +0100 CET failed  kube-prometheus-stack-79.7.1    v0.86.2
+    NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                   APP VERSION
+    ingress-nginx   ingress-nginx   1               2025-12-07 19:21:21.893689319 +0100 CET deployed        ingress-nginx-4.14.1    1.14.1
 
-Szukaj czegoś o nazwie ingress-nginx lub podobnej.
+Szukaj czegoś o nazwie `ingress-nginx` lub podobnej.
 Odinstaluj to (podstaw odpowiednią nazwę i namespace z listy wyżej):
 (Jeśli nazwa pakietu to np. my-ingress, wpisz my-ingress. Jeśli namespace to default, wpisz -n default).
 # helm uninstall ingress-nginx -n ingress-nginx
@@ -124,7 +130,8 @@ potwierdzamy, że nie ma już LoadBalancerów i nie ma już konkurencji nic nie 
 # kubectl get svc -A | grep LoadBalancer
 -> pusto
 
-Krok 2: Przerabiamy Twój Serwis na LoadBalancer
+Krok 2: 
+Przerabiamy Twój Serwis na LoadBalancer
 Twój ręczny serwis (3-service.yaml) był typu NodePort. 
 Zmieńmy go, żeby był bramą na świat.
 Edytuj plik 3-service.yaml (w katalogu manual-ingress):
@@ -170,7 +177,8 @@ Sprawdź, co powstało:
 # kubectl get pods -n ingress-space -w  (Flaga -w pozwoli Ci obserwować proces na żywo).
 
 
-Krok 3: Konfiguracja IngressClass
+Krok 3: 
+Konfiguracja IngressClass
 Żeby Twoje Ingressy (np. sklep.local) wiedziały, że mają używać TEGO kontrolera, musimy stworzyć obiekt IngressClass.
 Stwórz plik:  4-ingress-class.yaml 
 
@@ -189,16 +197,24 @@ Weryfikacja
 -----------
 Teraz Twój ręczny kontroler powinien obsługiwać cały ruch.
 przekopiujny 2 pliki:
- - szkolenie-k8s/PART10-Online-store/1-app.yaml    ---------> na app.yaml
- - szkolenie-k8s/PART10-Online-store/2-ingress.yaml  -------> na ingress.yaml
+ - szkolenie-k8s/PART10-Online-store/1-app.yaml    ---------> i move to: `app.yaml`
+ - szkolenie-k8s/PART10-Online-store/2-ingress.yaml  -------> i move to: `ingress.yaml`
 
  
 Ustaw w: ingress.yaml
-ingressClassName: nginx-manual
+ingressClassName: `nginx-manual`
 (Bo tak nazwaliśmy naszą klasę w deploymentcie i w pliku class.yaml).
 Wejdź na http://www.my-online-store.com/wear
 
 
+-----------------------------------------------------------------------------------------------
+Uwagaj na namespace!
+Moga być problemy z namespace, bo w plikach app.yaml i ingress.yaml nie ma bylo, 
+       określonego namespace - teraz juz wpisalem `default`.
+Domyślnie, jeśli nie podasz `-n default` w komendzie tworzącej Deployment, kubectl będzie działać w namespace `default`.
+Więc albo dopisuj -n default do każdej komendy
+Albo zmień domyślny kontekst (patrz niżej).
+ 
 
 # kubectl get ingress -n default
     NAME                 CLASS   HOSTS                     ADDRESS      PORTS     AGE
@@ -219,7 +235,7 @@ Jeśli nie chcesz ciągle dopisywać -n default, możesz po prostu przestawić s
     wear-deployment-68999fc75c-pmn6j    1/1     Running            0                 22h
 
 Zastosuj:
-# kubectl apply -f apps.yaml    (lub ze wskazaniem namespace = default:  kubectl apply -f apps.yaml -n default)
+# kubectl apply -f apps.yaml    (lub ze wskazaniem namespace = default:  `kubectl apply -f apps.yaml -n default`)
     deployment.apps/wear-deployment created
     service/wear-service created
     deployment.apps/video-deployment created
@@ -227,7 +243,7 @@ Zastosuj:
 
  
 Zastosuj:
-# kubectl apply -f ingress.yaml     (lub ze wskazaniem namespace = default:  kubectl apply -f ingress.yaml -n default)
+# kubectl apply -f ingress.yaml     (lub ze wskazaniem namespace = default:  `kubectl apply -f ingress.yaml -n default`)
     ingress.networking.k8s.io/ingress-wear-watch created
 
 # kubectl get ingress -A
@@ -240,13 +256,14 @@ Zastosuj:
  
 
 
-Krok 3: Konfiguracja DNS (Windows)
+Krok 3: 
+Konfiguracja DNS (Windows)
 W szkoleniu mowa jest o konfiguracji DNS.
 Ponieważ nie mamy prawdziwej domeny, musimy "oszukać" Twój komputer.
 Uruchom Notatnik jako Administrator.
 Otwórz C:\Windows\System32\drivers\etc\hosts.
 Dodaj linię (lub zaktualizuj istniejącą):
-127.0.0.1 www.my-online-store.com
+  `127.0.0.1 www.my-online-store.com`
 (Używamy 127.0.0.1, bo Docker mapuje port 80).
  
 
@@ -269,16 +286,47 @@ Właśnie własnoręcznie zbudowałeś i skonfigurowałeś główny router dla c
 To jest poziom "Hard".
 
 
-------------  sprzateanie ------------------- 
+------------------------  sprzątanie ------------------------------ 
 Wykonaj te komendy, aby usunąć całe to laboratorium:
+Upewnij się, że masz czyste środowisko (jeśli nie posprzątałeś wcześniej):
+sprawdź, czy namespace: `ingress-space` istnieje:
+# kubectl get namespaces
+        NAME              STATUS   AGE
+        cert-manager      Active   23h
+        default           Active   16d
+        ingress-nginx     Active   25h
+    --->ingress-space     Active   50m<------------------
+        kube-node-lease   Active   16d
+        kube-public       Active   16d
+        kube-system       Active   16d
+        monitoring        Active   16d
  
-Usuń namespace (znika Deployment, Service, ConfigMap, Pody)
+Jeśli tak, usuń go:
+Usuwa całą przestrzeń nazw (Pody, Serwisy, Deploymenty)
 # kubectl delete namespace ingress-space
 
-Usuń globalne uprawnienia (nie znikają same)
-# kubectl delete clusterrole ingress-role
+Sprawdź, czy istnieją globalne uprawnienia (RBAC):
+# kubectl get clusterrolebinding ingress-role-binding
+# kubectl get clusterrole ingress-role
+Jeśli tak, usuń je:
+Te obiekty nie mieszkają w żadnym namespace, więc nie znikną same:
 # kubectl delete clusterrolebinding ingress-role-binding
+# kubectl delete clusterrole ingress-role
 
+Sprawdź, czy istnieją obiekty w namespace ingress-space:
+# kubectl get all -n ingress-space
+Jeśli tak, usuń je:
+# kubectl delete all --all -n ingress-space
+
+Sprawdź, czy istnieją obiekty RBAC w namespace ingress-space:
+# kubectl get rolebinding -n ingress-space
+# kubectl get role -n ingress-space
+Jeśli tak, usuń je:
+# kubectl delete rolebinding <nazwa-rolebinding> -n ingress-space
+# kubectl delete role <nazwa-role> -n ingress-space
+
+Teraz masz czyste środowisko do pracy.
+nie ma już namespace `ingress-space`
 # kubectl get ingress -A
     NAMESPACE   NAME                 CLASS          HOSTS                     ADDRESS      PORTS     AGE
     default     admin-ingress        nginx          admin.local               172.17.0.2   80, 443   2d19h
@@ -286,3 +334,14 @@ Usuń globalne uprawnienia (nie znikają same)
     default     owocowy-ingress      nginx          *                         172.17.0.2   80        11d
     default     secure-ingress       nginx          secure.local              172.17.0.2   80, 443   2d20h
     default     sni-ingress          nginx          bank.local,sklep.local    172.17.0.2   80, 443   2d20h
+
+nie ma już namespace: `ingress-space`
+# kubectl get namespaces
+    NAME              STATUS   AGE
+    cert-manager      Active   23h
+    default           Active   16d
+    ingress-nginx     Active   25h
+    kube-node-lease   Active   16d
+    kube-public       Active   16d
+    kube-system       Active   16d
+    monitoring        Active   16d

@@ -41,6 +41,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: video-deployment
+  namespace: default   # <--- DOPISUJESZ TO
 spec:
   replicas: 1
   selector:

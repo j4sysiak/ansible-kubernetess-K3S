@@ -1,21 +1,28 @@
+szkolenia prowadzonego przez Mumshada Mannambetha (z kursu KodeKloud).
+https://www.youtube.com/watch?v=GhZi4DxaxxE&t=95s
+od 10 min.
+----------------------------------------------------------------------
+
 Ingress Controler om NGINX
-
------------------------------------------------------------------------
+--------------------------
+---------------------------------------------------------------------------------------
 czyli opowieść, z jakich "części" składa się recepcjonista (Pod + Service + ConfigMap).
------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
 
-To ćwiczenie pokazuje, jak zbudować Ingress Controller od zera, tworząc ręcznie wszystkie wymagane obiekty Kubernetes.
-Stwórzmy nowy katalog, żeby nie pomieszać tego z poprzednimi ćwiczeniami
+To ćwiczenie pokazuje, jak zbudować `Ingress Controller` od zera, tworząc ręcznie wszystkie wymagane obiekty Kubernetes.
+Stwórzmy nowy katalog, żeby nie pomieszać tego z poprzednimi ćwiczeniami.
 
-Krok 1: Konfiguracja i Uprawnienia (ConfigMap, ServiceAccount)
+Krok 1: 
+Konfiguracja i Uprawnienia (ConfigMap, ServiceAccount)
 Wideo wyjaśnia, że Nginx potrzebuje miejsca na konfigurację (ConfigMap) 
 oraz uprawnień do "patrzenia" na klaster (ServiceAccount). 
-Dodatkowo musimy stworzyć Namespace, żeby trzymać tam porządek.
+Dodatkowo musimy stworzyć Namespace (namespace: ingress-space), żeby trzymać tam porządek.
 
 Stwórz plik: 1-prereqs.yaml 
 
 
-Krok 2: Deployment (Serce Kontrolera)
+Krok 2: 
+Deployment (Serce Kontrolera)
 To jest najważniejszy moment (ok. 11 minuty filmu). 
 Musimy uruchomić Poda z obrazem Nginxa, ale to nie jest zwykły Nginx. 
 To specjalny obraz, który potrafi czytać Ingressy.
@@ -24,26 +31,58 @@ Musimy mu też przekazać specjalne zmienne środowiskowe (env), o których mowa
 Stwórz plik:  2-deployment.yaml 
 
 
-Krok 3: Serwis (Wystawienie na świat)
+Krok 3: 
+Serwis (Wystawienie na świat)
 Na koniec (ok. 12 minuty), instruktor wyjaśnia, że sam Deployment jest niedostępny z zewnątrz. 
-Potrzebujemy Serwisu typu NodePort, żeby "otworzyć dziurę" w klastrze.
+Potrzebujemy Serwisu typu `NodePort`, żeby "otworzyć dziurę" w klastrze.
 Stwórz plik: 3-service.yaml
 
 sprzątanie:
 Upewnij się, że masz czyste środowisko (jeśli nie posprzątałeś wcześniej):
-1. Usuń całą przestrzeń nazw (Pody, Serwisy, Deploymenty)
+sprawdź, czy namespace ingress-space istnieje:
+# kubectl get namespaces
+        NAME              STATUS   AGE
+        cert-manager      Active   22h
+        default           Active   15d
+    --->ingress-nginx     Active   24h
+        kube-node-lease   Active   15d
+        kube-public       Active   15d
+        kube-system       Active   15d
+        monitoring        Active   15d
+Jeśli tak, usuń go:
+Usuwa całą przestrzeń nazw (Pody, Serwisy, Deploymenty)
 # kubectl delete namespace ingress-space
 
-2. Usuń globalne uprawnienia (RBAC)
-   Te obiekty nie mieszkają w żadnym namespace, więc nie znikną same:
+Sprawdź, czy istnieją globalne uprawnienia (RBAC):
+# kubectl get clusterrolebinding ingress-role-binding
+# kubectl get clusterrole ingress-role
+Jeśli tak, usuń je:
+Te obiekty nie mieszkają w żadnym namespace, więc nie znikną same:
 # kubectl delete clusterrolebinding ingress-role-binding
 # kubectl delete clusterrole ingress-role
+
+Sprawdź, czy istnieją obiekty w namespace ingress-space:
+# kubectl get all -n ingress-space
+Jeśli tak, usuń je:
+# kubectl delete all --all -n ingress-space
+
+Sprawdź, czy istnieją obiekty RBAC w namespace ingress-space:
+# kubectl get rolebinding -n ingress-space
+# kubectl get role -n ingress-space
+Jeśli tak, usuń je:
+# kubectl delete rolebinding <nazwa-rolebinding> -n ingress-space
+# kubectl delete role <nazwa-role> -n ingress-space
+
+Teraz masz czyste środowisko do pracy.
 
 Uruchomienie i Weryfikacja
 Teraz możesz to wdrożyć, żeby zobaczyć, jak te komponenty wstają "ręcznie":
 # kubectl apply -f 1-prereqs.yaml
+    namespace/ingress-space created
     configmap/nginx-configuration created
     serviceaccount/ingress-serviceaccount created
+    clusterrole.rbac.authorization.k8s.io/ingress-role created
+    clusterrolebinding.rbac.authorization.k8s.io/ingress-role-binding created
 
 # kubectl apply -f 2-deployment.yaml
     deployment.apps/nginx-ingress-controller created
@@ -54,31 +93,35 @@ Teraz możesz to wdrożyć, żeby zobaczyć, jak te komponenty wstają "ręcznie
 
 Sprawdź, co powstało:
 # kubectl get all -n ingress-space
-    NAME                                            READY   STATUS             RESTARTS   AGE
-    pod/nginx-ingress-controller-6bff97ddbb-c6pgw   0/1     ImagePullBackOff   0          55s
+    NAME                                            READY   STATUS    RESTARTS   AGE
+    pod/nginx-ingress-controller-5b869c5c9c-pcwlt   1/1     Running   0          29s
 
-    NAME                      TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)                      AGE
-    service/ingress-service   NodePort   10.43.146.49   <none>        80:30315/TCP,443:30992/TCP   36s
+    NAME                      TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+    service/ingress-service   NodePort   10.43.253.202   <none>        80:30952/TCP,443:30458/TCP   15s
 
     NAME                                       READY   UP-TO-DATE   AVAILABLE   AGE
-    deployment.apps/nginx-ingress-controller   0/1     1            0           55s
+    deployment.apps/nginx-ingress-controller   1/1     1            1           29s
 
     NAME                                                  DESIRED   CURRENT   READY   AGE
-    replicaset.apps/nginx-ingress-controller-6bff97ddbb   1         1         0       55s
+    replicaset.apps/nginx-ingress-controller-5b869c5c9c   1         1         1       29s
 
 
 # kubectl get pods -n ingress-space -w  (Flaga -w pozwoli Ci obserwować proces na żywo).
-
+    NAME                                        READY   STATUS    RESTARTS   AGE
+    nginx-ingress-controller-5b869c5c9c-pcwlt   1/1     Running   0          79s
 
 
 -------------------------------- blad ----------------------------
-W powyższym przykładzie widać błąd ImagePullBackOff.
+Jeśliw, w powyższym przykładzie widać błąd `ImagePullBackOff`.
 Oznacza to, że Kubernetes nie może pobrać obrazu z rejestru.
 W filmie instruktor używa obrazu "k8s.gcr.io/ingress-nginx/controller:v1.2.1",
 który może być niedostępny w Twoim środowisku.
 Aby to naprawić:
 
-# kubectl describe pod -n ingress-space nginx-ingress-controller-6bff97ddbb-c6pgw
+# kubectl describe pod -n ingress-space nginx-ingress-controller-5b869c5c9c-pcwlt
+[fajne logi z opisu poda]
+ 
+
 
 Można to sprawdzić i naprawić! Błąd ImagePullBackOff oznacza, 
        że Kubernetes próbuje pobrać ten konkretny obraz (0.21.0), ale mu się nie udaje.
@@ -106,22 +149,21 @@ Uruchom naprawę
 Weryfikacja
 Teraz daj mu chwilę na pobranie nowego obrazu i sprawdź status:
 # kubectl get pods -n ingress-space
-    NAME                                       READY   STATUS    RESTARTS   AGE
-    nginx-ingress-controller-cd7685684-gvgqr   1/1     Running   0          14m
+    NAME                                        READY   STATUS    RESTARTS   AGE
+    nginx-ingress-controller-5b869c5c9c-pcwlt   1/1     Running   0          12m
 
 # kubectl get all -n ingress-space
-    NAME                                           READY   STATUS    RESTARTS   AGE
-    pod/nginx-ingress-controller-cd7685684-gvgqr   1/1     Running   0          14m
+    NAME                                            READY   STATUS    RESTARTS   AGE
+    pod/nginx-ingress-controller-5b869c5c9c-pcwlt   1/1     Running   0          12m
 
-    NAME                      TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)                      AGE
-    service/ingress-service   NodePort   10.43.146.49   <none>        80:30315/TCP,443:30992/TCP   23m
+    NAME                      TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+    service/ingress-service   NodePort   10.43.253.202   <none>        80:30952/TCP,443:30458/TCP   12m
 
     NAME                                       READY   UP-TO-DATE   AVAILABLE   AGE
-    deployment.apps/nginx-ingress-controller   1/1     1            1           23m
+    deployment.apps/nginx-ingress-controller   1/1     1            1           12m
 
     NAME                                                  DESIRED   CURRENT   READY   AGE
-    replicaset.apps/nginx-ingress-controller-6bff97ddbb   0         0         0       23m
-    replicaset.apps/nginx-ingress-controller-cd7685684    1         1         1       14m
+    replicaset.apps/nginx-ingress-controller-5b869c5c9c   1         1         1       12m
 
 Powinieneś zobaczyć:
 pod/nginx-ingress-controller-... w stanie Running (1/1 READY).
@@ -135,12 +177,18 @@ Pod: 1/1 Running – Kontener Nginx działa, nie restartuje się.
 Service: NodePort – Jest aktywny i nasłuchuje.
 Deployment: 1/1 – Kubernetes utrzymuje wymaganą liczbę kopii.
 Co to oznacza w praktyce?
-Oznacza to, że zrozumiałeś i ręcznie odtworzyłeś to, co zazwyczaj robią automatyczne instalatory. Wiesz już, że Ingress Controller to nie "magia", tylko zestaw konkretnych klocków:
-Pod (z aplikacją Nginx),
-ServiceAccount + RBAC (uprawnienia do patrzenia na klaster),
-Service (okno na świat).
+Oznacza to, że zrozumiałeś i ręcznie odtworzyłeś to, co zazwyczaj robią automatyczne instalatory. 
+Wiesz już, że `Ingress Controller` to nie "magia", tylko zestaw konkretnych klocków:
+1. Pod (z aplikacją Nginx),
+2. ServiceAccount + RBAC (uprawnienia do patrzenia na klaster),
+3. Service (okno na świat).
+
 Co robimy dalej?
-Ponieważ ten "manualny" Ingress Controller był tylko ćwiczeniem edukacyjnym i działa w osobnej przestrzeni nazw (ingress-space), proponuję go teraz posprzątać.
+Ponieważ ten "manualny" `Ingress Controller` był tylko ćwiczeniem edukacyjnym i działa w osobnej przestrzeni nazw 
+(namespace: `ingress-space`), proponuję go teraz posprzątać.
+i przejść do następnego laboratorium, gdzie zainstalujemy `Ingress Controller` w sposób zautomatyzowany,
+używając popularnego narzędzia Helm.
+# cd ../LAB2-manual-ingress-as-LB
 
  
 
