@@ -1,3 +1,13 @@
+szkolenia prowadzonego przez Mumshada Mannambetha (z kursu KodeKloud).
+https://www.youtube.com/watch?v=GhZi4DxaxxE&t=95s
+od 10 min.
+----------------------------------------------------------------------
+Ingress Controler on NGINX  z serwisem LadBalancer
+----------------------------------------------------------------------
+czyli opowieść, z jakich "części" składa się recepcjonista (Pod + Service + ConfigMap).
+---------------------------------------------------------------------------------------
+
+
 Chodzi o to, że w tej chwili w Twoim jednym małym klastrze (kontenerze Dockera) działają 
                     dwa konkurencyjne systemy robiące dokładnie to samo.
 

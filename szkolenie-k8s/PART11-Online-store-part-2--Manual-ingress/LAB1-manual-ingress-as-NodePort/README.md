@@ -2,10 +2,8 @@ szkolenia prowadzonego przez Mumshada Mannambetha (z kursu KodeKloud).
 https://www.youtube.com/watch?v=GhZi4DxaxxE&t=95s
 od 10 min.
 ----------------------------------------------------------------------
-
-Ingress Controler om NGINX
---------------------------
----------------------------------------------------------------------------------------
+Ingress Controler on NGINX  z serwisem NodePort
+----------------------------------------------------------------------
 czyli opowieść, z jakich "części" składa się recepcjonista (Pod + Service + ConfigMap).
 ---------------------------------------------------------------------------------------
 
@@ -13,15 +11,22 @@ To ćwiczenie pokazuje, jak zbudować `Ingress Controller` od zera, tworząc rę
 Stwórzmy nowy katalog, żeby nie pomieszać tego z poprzednimi ćwiczeniami.
 
 Krok 1: 
+-------
 Konfiguracja i Uprawnienia (ConfigMap, ServiceAccount)
 Wideo wyjaśnia, że Nginx potrzebuje miejsca na konfigurację (ConfigMap) 
 oraz uprawnień do "patrzenia" na klaster (ServiceAccount). 
-Dodatkowo musimy stworzyć Namespace (namespace: ingress-space), żeby trzymać tam porządek.
+Dodatkowo musimy stworzyć Namespace (namespace: `ingress-space`), żeby trzymać tam porządek.
 
 Stwórz plik: 1-prereqs.yaml 
+1. tworzy namespace: `ingress-space`, żeby trzymać tam wszystkie obiekty związane z Ingressem
+2. tworzy `ConfigMap` dla Nginx, żeby mógł trzymać swoją konfigurację
+3. tworzy `ServiceAccount` dla Nginx, żeby miał tożsamość w klastrze
+4. tworzy `ClusterRole` z uprawnieniami dla Nginx, żeby mógł czytać Ingressy i Serwisy w całym klastrze
+5. tworzy `ClusterRoleBinding`, który łączy `ServiceAccount` z `ClusterRole`, żeby Nginx miał te uprawnienia 
+                                                                       bo nie mieszka w namespace `ingress-space`
 
-
-Krok 2: 
+Krok 2:
+-------
 Deployment (Serce Kontrolera)
 To jest najważniejszy moment (ok. 11 minuty filmu). 
 Musimy uruchomić Poda z obrazem Nginxa, ale to nie jest zwykły Nginx. 
@@ -30,8 +35,18 @@ Musimy mu też przekazać specjalne zmienne środowiskowe (env), o których mowa
             żeby wiedział, jak się nazywa i gdzie żyje.
 Stwórz plik:  2-deployment.yaml 
 
+co tu się dzieje?
+1. Tworzy Deployment o nazwie `nginx-ingress-controller` w namespace `ingress-space`
+2. Używa obrazu `k8s.gcr.io/ingress-nginx/controller:v1.2.1`, który jest specjalnym Nginxem dla Ingressów
+3. Przekazuje zmienne środowiskowe, które konfigurują Nginx:
+   - `POD_NAME` – nazwa Poda (dynamicznie pobierana)
+   - `POD_NAMESPACE` – namespace Poda (dynamicznie pobierana)
+4. Ustawia `ServiceAccount` na `ingress-serviceaccount`, żeby Nginx miał odpowiednie uprawnienia
+5. Eksponuje porty 80 i 443, które Nginx będzie nasłuchiwać
+6. Definiuje strategię aktualizacji i zasoby
 
 Krok 3: 
+-------
 Serwis (Wystawienie na świat)
 Na koniec (ok. 12 minuty), instruktor wyjaśnia, że sam Deployment jest niedostępny z zewnątrz. 
 Potrzebujemy Serwisu typu `NodePort`, żeby "otworzyć dziurę" w klastrze.
@@ -44,7 +59,8 @@ sprawdź, czy namespace ingress-space istnieje:
         NAME              STATUS   AGE
         cert-manager      Active   22h
         default           Active   15d
-    --->ingress-nginx     Active   24h
+    --->ingress-space     Active   21h<------------- do usunięcia!
+        ingress-nginx     Active   24h
         kube-node-lease   Active   15d
         kube-public       Active   15d
         kube-system       Active   15d
@@ -75,7 +91,9 @@ Jeśli tak, usuń je:
 
 Teraz masz czyste środowisko do pracy.
 
-Uruchomienie i Weryfikacja
+
+Uruchomienie i Weryfikacja:
+---------------------------
 Teraz możesz to wdrożyć, żeby zobaczyć, jak te komponenty wstają "ręcznie":
 # kubectl apply -f 1-prereqs.yaml
     namespace/ingress-space created
@@ -111,8 +129,8 @@ Sprawdź, co powstało:
     nginx-ingress-controller-5b869c5c9c-pcwlt   1/1     Running   0          79s
 
 
--------------------------------- blad ----------------------------
-Jeśliw, w powyższym przykładzie widać błąd `ImagePullBackOff`.
+-------------------------------- jeśli blad: `ImagePullBackOff` ----------------------------
+Jeśli, w powyższym przykładzie widać błąd `ImagePullBackOff`.
 Oznacza to, że Kubernetes nie może pobrać obrazu z rejestru.
 W filmie instruktor używa obrazu "k8s.gcr.io/ingress-nginx/controller:v1.2.1",
 który może być niedostępny w Twoim środowisku.
@@ -186,8 +204,7 @@ Wiesz już, że `Ingress Controller` to nie "magia", tylko zestaw konkretnych kl
 Co robimy dalej?
 Ponieważ ten "manualny" `Ingress Controller` był tylko ćwiczeniem edukacyjnym i działa w osobnej przestrzeni nazw 
 (namespace: `ingress-space`), proponuję go teraz posprzątać.
-i przejść do następnego laboratorium, gdzie zainstalujemy `Ingress Controller` w sposób zautomatyzowany,
-używając popularnego narzędzia Helm.
+i przejść do następnego laboratorium, gdzie zainstalujemy `NGINX Ingress Controller` z serwisem `LoadBalancer`.
 # cd ../LAB2-manual-ingress-as-LB
 
  
