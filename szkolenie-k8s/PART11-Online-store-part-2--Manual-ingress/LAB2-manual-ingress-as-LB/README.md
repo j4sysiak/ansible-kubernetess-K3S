@@ -1,9 +1,9 @@
 szkolenia prowadzonego przez Mumshada Mannambetha (z kursu KodeKloud).
 https://www.youtube.com/watch?v=GhZi4DxaxxE&t=95s
 od 10 min.
-----------------------------------------------------------------------
+--------------------------------------------------
 Ingress Controler on NGINX  z serwisem LadBalancer
-----------------------------------------------------------------------
+---------------------------------------------------------------------------------------
 czyli opowieść, z jakich "części" składa się recepcjonista (Pod + Service + ConfigMap).
 ---------------------------------------------------------------------------------------
 
@@ -218,13 +218,12 @@ Wejdź na http://www.my-online-store.com/wear
 
 
 -----------------------------------------------------------------------------------------------
-Uwagaj na namespace!
-Moga być problemy z namespace, bo w plikach app.yaml i ingress.yaml nie ma bylo, 
-       określonego namespace - teraz juz wpisalem `default`.
+Uważaj na namespace!
+Moga być problemy z namespace, bo w plikach app.yaml i ingress.yaml nie bylo  określonego namespace -
+                                                                               - teraz juz wpisalem `default`.
 Domyślnie, jeśli nie podasz `-n default` w komendzie tworzącej Deployment, kubectl będzie działać w namespace `default`.
-Więc albo dopisuj -n default do każdej komendy
-Albo zmień domyślny kontekst (patrz niżej).
- 
+Więc albo dopisuj `-n default` do każdej komendy deploymentu pliku app.yaml i ingress.yaml.
+Albo zmień domyślny kontekst globalnie (patrz niżej).
 
 # kubectl get ingress -n default
     NAME                 CLASS   HOSTS                     ADDRESS      PORTS     AGE
@@ -233,7 +232,8 @@ Albo zmień domyślny kontekst (patrz niżej).
     ingress.networking.k8s.io "ingress-wear-watch" deleted from default namespace
 
 Zmiana domyślnego kontekstu (Najwygodniejszy)
-Jeśli nie chcesz ciągle dopisywać -n default, możesz po prostu przestawić swoją konsolę tak, żeby domyślnie pracowała w default.
+Jeśli nie chcesz ciągle dopisywać `-n default`, możesz po prostu przestawić swoją konsolę tak, 
+                                                                        żeby domyślnie pracowała w default.
 1. Przestaw konsolę:
 # kubectl config set-context --current --namespace=default
     Context "default" modified.
@@ -241,6 +241,7 @@ Jeśli nie chcesz ciągle dopisywać -n default, możesz po prostu przestawić s
 2. Sprawdź, gdzie jesteś:
 # kubectl get pods
     NAME                                READY   STATUS             RESTARTS          AGE
+    [...]
     video-deployment-79df85996d-c928j   1/1     Running            0                 22h
     wear-deployment-68999fc75c-pmn6j    1/1     Running            0                 22h
 
@@ -264,6 +265,8 @@ Zastosuj:
         default     secure-ingress       nginx          secure.local              172.17.0.2   80, 443   2d20h
         default     sni-ingress          nginx          bank.local,sklep.local    172.17.0.2   80, 443   2d19h
  
+
+ale tak naprawde i najlepiej, to zmodyfikuj pliki: `app.yaml` i `ingress.yaml` i dodaj w nich namespace: `default`
 
 
 Krok 3: 
