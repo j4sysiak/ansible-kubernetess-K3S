@@ -7,6 +7,8 @@ Ingress Controler on NGINX  z serwisem NodePort
 czyli opowieść, z jakich "części" składa się recepcjonista (Pod + Service + ConfigMap).
 ---------------------------------------------------------------------------------------
 
+# cd ~/dev/ansible-kubernetess-K3S/szkolenie-k8s/PART11-Online-store-part-2--Manual-ingress/LAB1-manual-ingress-as-NodePort
+
 To ćwiczenie pokazuje, jak zbudować `Ingress Controller` od zera, tworząc ręcznie wszystkie wymagane obiekty Kubernetes.
 Stwórzmy nowy katalog, żeby nie pomieszać tego z poprzednimi ćwiczeniami.
 
@@ -50,34 +52,50 @@ Krok 3:
 Serwis (Wystawienie na świat)
 Na koniec (ok. 12 minuty), instruktor wyjaśnia, że sam Deployment jest niedostępny z zewnątrz. 
 Potrzebujemy Serwisu typu `NodePort`, żeby "otworzyć dziurę" w klastrze.
+
 Stwórz plik: 3-service.yaml
 
-sprzątanie:
+co tu się dzieje?
+1. Tworzy Serwis o nazwie `ingress-service` w namespace `ingress-space`
+2. Typ Serwisu to `NodePort`, co oznacza, że będzie dostępny na wszystkich węzłach klastra pod losowo wybranymi portami
+3. Serwis przekierowuje ruch na port 80 Poda (`nginx-ingress-controller`)
+4. Kubernetes automatycznie przypisze porty NodePort (w zakresie 30000-32767) dla portów 80 i 443
+5. Definiuje selektor, który łączy Serwis z Podem Nginx
+6. Ustawia typ protokołu na TCP
+
+
+Jednak, przed uruchomieniem i weryfikacją zróbmy porządne sprzątanie:
+---------------------------------------------------------------------
 Upewnij się, że masz czyste środowisko (jeśli nie posprzątałeś wcześniej):
-sprawdź, czy namespace ingress-space istnieje:
+sprawdź, czy namespace: `ingress-space` istnieje:
 # kubectl get namespaces
-        NAME              STATUS   AGE
-        cert-manager      Active   22h
-        default           Active   15d
-    --->ingress-space     Active   21h<------------- do usunięcia!
-        ingress-nginx     Active   24h
-        kube-node-lease   Active   15d
-        kube-public       Active   15d
-        kube-system       Active   15d
-        monitoring        Active   15d
+    NAME              STATUS   AGE
+    default           Active   15d
+    ingress-space     Active   21h<------------- do usunięcia!
+
 Jeśli tak, usuń go:
 Usuwa całą przestrzeń nazw (Pody, Serwisy, Deploymenty)
 # kubectl delete namespace ingress-space
+    namespace "ingress-space" deleted
 
 Sprawdź, czy istnieją globalne uprawnienia (RBAC):
 # kubectl get clusterrolebinding ingress-role-binding
+    NAME                   ROLE                       AGE
+    ingress-role-binding   ClusterRole/ingress-role   95m
+
 # kubectl get clusterrole ingress-role
+    NAME           CREATED AT
+    ingress-role   2025-12-08T19:02:15Z
+
 Jeśli tak, usuń je:
 Te obiekty nie mieszkają w żadnym namespace, więc nie znikną same:
 # kubectl delete clusterrolebinding ingress-role-binding
-# kubectl delete clusterrole ingress-role
+    clusterrolebinding.rbac.authorization.k8s.io "ingress-role-binding" deleted
 
-Sprawdź, czy istnieją obiekty w namespace ingress-space:
+# kubectl delete clusterrole ingress-role
+    clusterrole.rbac.authorization.k8s.io "ingress-role" deleted
+
+Sprawdź, czy istnieją obiekty w namespace: `ingress-space`:
 # kubectl get all -n ingress-space
 Jeśli tak, usuń je:
 # kubectl delete all --all -n ingress-space
@@ -89,8 +107,9 @@ Jeśli tak, usuń je:
 # kubectl delete rolebinding <nazwa-rolebinding> -n ingress-space
 # kubectl delete role <nazwa-role> -n ingress-space
 
-Teraz masz czyste środowisko do pracy.
 
+
+Teraz masz czyste środowisko do pracy.
 
 Uruchomienie i Weryfikacja:
 ---------------------------
@@ -200,6 +219,24 @@ Wiesz już, że `Ingress Controller` to nie "magia", tylko zestaw konkretnych kl
 1. Pod (z aplikacją Nginx),
 2. ServiceAccount + RBAC (uprawnienia do patrzenia na klaster),
 3. Service (okno na świat).
+
+Weryfikacja:
+------------
+
+sprawdź, jakie porty NodePort zostały przypisane:
+# kubectl get service ingress-service -n ingress-space
+    NAME              TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)                      AGE
+    ingress-service   NodePort   10.43.197.25   <none>        80:32533/TCP,443:32205/TCP   88s
+
+Zauważ, że w kolumnie PORT(S) widzisz coś takiego: 80:32533/TCP,443:32205/TCP
+Oznacza to, że port 80 Poda Nginx jest dostępny na wszystkich węzłach klastra pod portem 32533.
+Podobnie, port 443 jest dostępny pod portem 32205.
+Możesz teraz przetestować Ingress, wysyłając żądania HTTP do dowolnego węzła klastra
+na przypisanym porcie NodePort (np. 32533 dla HTTP).
+jak to zrobić, użyj narzędzia curl lub przeglądarki internetowej.
+#  www.my-online-store.com/wear
+#  www.my-online-store.com/watch
+ 
 
 Co robimy dalej?
 Ponieważ ten "manualny" `Ingress Controller` był tylko ćwiczeniem edukacyjnym i działa w osobnej przestrzeni nazw 
