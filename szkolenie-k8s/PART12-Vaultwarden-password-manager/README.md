@@ -1,8 +1,10 @@
-Krok 1: Generowanie Certyfikatów (Twoja "Kłódka")
-Musimy stworzyć certyfikat dla domeny passwords.local
+Krok 1:
+-------
+Generowanie Certyfikatów (Twoja "Kłódka")
+Musimy stworzyć certyfikat dla domeny `passwords.local`
 Bez tego Vaultwarden nie pozwoli Ci się zalogować.
 
-najpierw instalujemy NGINX Ingress Controller (jeśli jeszcze go nie masz):
+najpierw instalujemy `NGINX Ingress Controller` (jeśli jeszcze go nie masz):
 
 # helm repo update
 
@@ -20,11 +22,13 @@ najpierw instalujemy NGINX Ingress Controller (jeśli jeszcze go nie masz):
 # openssl req -new -x509 -key tls.key -out tls.crt -days 365 -subj "/CN=passwords.local"
 
 Krok 2:
-Teraz wgrajmy go do klastra jako Kubernetes Secret typu TLS:
+-------
+Teraz wgrajmy go do klastra jako Kubernetes `Secret` typu TLS:
 # kubectl create secret tls vaultwarden-tls --key tls.key --cert tls.crt
     secret/vaultwarden-tls created
 
 Krok 3: 
+-------
 Hasło Administratora (Dla aplikacji)
 Vaultwarden ma specjalny panel admina (do zarządzania użytkownikami), który jest chroniony tokenem. 
 Nie chcemy tego tokena wpisywać "na twardo" w pliku Deploymentu.
@@ -32,7 +36,8 @@ Stworzymy Kubernetes Secret z tokenem: SuperTajneHasloAdmina123
 # kubectl create secret generic vaultwarden-secret --from-literal=ADMIN_TOKEN=SuperTajneHasloAdmina123
     secret/vaultwarden-secret created
 
-Krok 4: 
+Krok 4:
+-------
 Plik Manifestu vaultwarden.yaml
 Stwórz plik:  vaultwarden.yaml 
 
@@ -49,7 +54,8 @@ Wdróż to:
     service/vaultwarden-svc created
     ingress.networking.k8s.io/vaultwarden-ingress created
 
-Krok 5: 
+Krok 5:
+-------
 Konfiguracja DNS (Windows)
 Twój Windows musi wiedzieć, gdzie szukać passwords.local.
 Uruchom Notatnik jako Administrator.
@@ -61,7 +67,8 @@ Zapisz plik.
 
 
 
-Krok 6: 
+Krok 6:
+-------
 Wielki Test (Czy to działa?)
 Teraz najważniejsza chwila.
 Otwórz przeglądarkę.

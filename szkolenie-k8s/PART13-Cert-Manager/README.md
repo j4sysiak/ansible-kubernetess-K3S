@@ -19,7 +19,8 @@ W naszym laboratorium (localhost) użyjemy go do generowania certyfikatów "Self
 LAB: Automatyzacja SSL z `Cert-Managerem`
 Zróbmy to. Zobaczysz, jak `Secret` "pojawia się sam".
 
-Krok 1: 
+Krok 1:
+-------
 Instalacja `Cert-Manager`a
 Musimy zainstalować ten program w klastrze. 
 Najszybciej z oficjalnego pliku YAML.
@@ -38,7 +39,8 @@ Powinieneś zobaczyć 3 pody:
  - `cainjector`
  - `webhook` w stanie Running
 
-Krok 2: 
+Krok 2:
+-------
 Stworzenie "Wydawcy" (Issuer)
 Musimy powiedzieć `Cert-Managerowi`, kto ma wystawiać certyfikaty. 
 Ponieważ jesteśmy na lokalnym Dockerze, stworzymy "Wydawcę Samo-podpisanego" (SelfSigned).
@@ -48,7 +50,8 @@ Wdróż go:
 # kubectl apply -f issuer.yaml
     clusterissuer.cert-manager.io/selfsigned-issuer created
 
-Krok 3: 
+Krok 3:
+-------
 Aplikacja + Ingress (Magia Automatyzacji)
 Teraz wystawimy nową aplikację (np. "Auto-SSL").
 W pliku Ingress dodamy specjalną adnotację, która powie `Cert-Managerowi`: "Hej, załatw mi certyfikat!".
@@ -60,7 +63,9 @@ Wdróż to:
     service/auto-ssl-svc created
     ingress.networking.k8s.io/auto-ssl-ingress created
 
+
 Krok 4:
+-------
 Obserwacja Magii
 Teraz patrz uważnie. 
 Nie tworzyliśmy ręcznie sekretu automat-tls-secret. 
@@ -76,7 +81,8 @@ Możesz też sprawdzić status certyfikatu:
     automat-tls-secret   True    automat-tls-secret   2m27s
 Powinieneś zobaczyć READY: True.
 
-Krok 5: 
+Krok 5:
+-------
 Test w przeglądarce
 Dodaj do hosts w Windowsie: 127.0.0.1 auto.local 
 Wejdź na https://auto.local 
