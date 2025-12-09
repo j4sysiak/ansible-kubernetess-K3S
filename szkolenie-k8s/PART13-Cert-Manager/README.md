@@ -6,21 +6,21 @@ Wpisywać komendy openssl, żeby wygenerować klucze?
 Wpisywać kubectl create secret, żeby wrzucić je do klastra?
 Pilnować, kiedy certyfikat wygaśnie (np. za rok)?
 
-Cert-Manager to automat (robot), który robi to wszystko za Ciebie.
+`Cert-Manager` to automat (robot), który robi to wszystko za Ciebie.
 Ty w pliku Ingressa piszesz tylko: "Chcę certyfikat dla domena.local".
-Cert-Manager widzi to żądanie.
+`Cert-Manager` widzi to żądanie.
 Sam generuje klucze.
-Sam tworzy Kubernetes Secret.
+Sam tworzy Kubernetes `Secret`.
 Sam go odnawia, jak się kończy termin ważności.
-W środowisku produkcyjnym Cert-Manager łączy się np. z Let's Encrypt, dając Ci darmowe, zielone kłódki automatycznie. 
+W środowisku produkcyjnym `Cert-Manager` łączy się np. z Let's Encrypt, dając Ci darmowe, zielone kłódki automatycznie. 
 W naszym laboratorium (localhost) użyjemy go do generowania certyfikatów "Self-Signed" (samo-podpisanych), 
  ale bez wpisywania ani jednej komendy openssl.
 
-LAB: Automatyzacja SSL z Cert-Managerem
-Zróbmy to. Zobaczysz, jak Secret "pojawia się sam".
+LAB: Automatyzacja SSL z `Cert-Managerem`
+Zróbmy to. Zobaczysz, jak `Secret` "pojawia się sam".
 
 Krok 1: 
-Instalacja Cert-Managera
+Instalacja `Cert-Manager`a
 Musimy zainstalować ten program w klastrze. 
 Najszybciej z oficjalnego pliku YAML.
 Wpisz w terminalu WSL:
@@ -32,11 +32,15 @@ Poczekaj chwilę, aż pody wstaną. Sprawdź:
     cert-manager-7d678bfb4f-rwdhf              0/1     ContainerCreating   0          24s
     cert-manager-cainjector-7449dc67b9-89z65   0/1     ContainerCreating   0          24s
     cert-manager-webhook-7789f864b7-qbs9r      0/1     Running             0          24s
-(Powinieneś zobaczyć 3 pody: cert-manager, cainjector, webhook w stanie Running).
+
+Powinieneś zobaczyć 3 pody: 
+ - `cert-manager`
+ - `cainjector`
+ - `webhook` w stanie Running
 
 Krok 2: 
 Stworzenie "Wydawcy" (Issuer)
-Musimy powiedzieć Cert-Managerowi, kto ma wystawiać certyfikaty. 
+Musimy powiedzieć `Cert-Managerowi`, kto ma wystawiać certyfikaty. 
 Ponieważ jesteśmy na lokalnym Dockerze, stworzymy "Wydawcę Samo-podpisanego" (SelfSigned).
 Stwórz plik:  issuer.yaml
 
@@ -47,7 +51,7 @@ Wdróż go:
 Krok 3: 
 Aplikacja + Ingress (Magia Automatyzacji)
 Teraz wystawimy nową aplikację (np. "Auto-SSL").
-W pliku Ingress dodamy specjalną adnotację, która powie Cert-Managerowi: "Hej, załatw mi certyfikat!".
+W pliku Ingress dodamy specjalną adnotację, która powie `Cert-Managerowi`: "Hej, załatw mi certyfikat!".
 Stwórz plik:   auto-ssl-app.yaml 
 
 Wdróż to:
