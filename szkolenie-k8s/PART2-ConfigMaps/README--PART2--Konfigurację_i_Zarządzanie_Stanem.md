@@ -1,27 +1,29 @@
-W pracy rzadko wdraża się "czyste" obrazy (jak nasz Nginx w PART1--Networking-Services). 
+W pracy rzadko wdraża się "czyste" obrazy (jak nasz Nginx w PART1-Networking-Services). 
 Zazwyczaj aplikacja potrzebuje:
 Plików konfiguracyjnych (np. własny index.html lub nginx.conf).
 Haseł i kluczy (których nie wolno trzymać w kodzie).
 Samoleczenia (K8s musi wiedzieć, kiedy aplikacja się zawiesiła).
 
-1. Lab 5: ConfigMaps (Wstrzykiwanie Konfiguracji)
-   Scenariusz: Twój szef mówi: "Ten Nginx wyświetla domyślną stronę. 
-   Chcę, żeby wyświetlał naszą firmową stronę powitalną, ale NIE chcę budować nowego obrazu Dockera."
+1. Lab 5: `ConfigMaps` (Wstrzykiwanie Konfiguracji)
+   Scenariusz: Twój szef mówi: 
+   "
+     Ten Nginx wyświetla domyślną stronę. 
+     Chcę, żeby wyświetlał naszą firmową stronę powitalną, ale NIE chcę budować nowego obrazu Dockera.
+   "
    
-   Rozwiązanie: Użyjemy ConfigMap. 
+   Rozwiązanie: Użyjemy `ConfigMap`. 
    To obiekt K8s, który przechowuje dane (pliki, zmienne) i pozwala "wstrzyknąć" je do kontenera.
-
-   
- - Stwórz plik custom-website.yaml
+ 
+ - Stwórz plik:  custom-website.yaml
  - Zmodyfikuj plik Deploymentu, aby używał tej mapy: nginx-deployment-custom.yaml
 
 2. Zadanie dla Ciebie:
 
-Odpal ConfigMap z własną stroną:
+Odpal `ConfigMap` z własną stroną:
 # kubectl apply -f custom-website.yaml
     configmap/my-website-config created
 
-Odpal deployment z konfiguracja ConfigMap:
+Odpal deployment z konfiguracja `ConfigMap`:
 # kubectl apply -f nginx-deployment-custom.yaml
     deployment.apps/my-webapp-custom created
 
@@ -39,7 +41,7 @@ Sprawdź Pody (czy Deployment działa):
     my-webapp-custom-c6c5f6f44-78cs5   1/1     Running   0          80s     10.42.0.28   k3s-master   <none>           <none>
 
 
-   Wystaw to na zewnątrz (używając kubectl port-forward lub tworząc Serwis LoadBalancer dla app: custom-app).
+   Wystaw to na zewnątrz (używając `kubectl port-forward` lub tworząc Serwis LoadBalancer dla app: custom-app).
    Wejdź na stronę. Powinieneś zobaczyć "Witaj Szefie!" zamiast "Welcome to nginx!".
 
 Wystaw to na zewnątrz (używając kubectl port-forward lub tworząc Serwis LoadBalancer dla app: custom-app).
@@ -77,7 +79,7 @@ Uruchom ten jednorazowy "pod testowy", który da Ci terminal w środku klastra:
 
 
 Co się właśnie stało:
-Stworzyłeś ConfigMap z własnym plikiem index.html.
+Stworzyłeś `ConfigMap` z własnym plikiem index.html.
 Zmodyfikowałeś Deployment, aby zamontować ten plik do kontenera Nginx, nadpisując domyślny plik.
 Uruchomiłeś nowy Pod z tą konfiguracją.
 Wejście na stronę pokazuje teraz Twoją własną stronę powitalną.

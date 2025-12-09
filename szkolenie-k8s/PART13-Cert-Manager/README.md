@@ -92,6 +92,9 @@ Cert-Manager to potężne narzędzie do automatyzacji zarządzania certyfikatami
 Pozwala na automatyczne generowanie, odnawianie i zarządzanie certyfikatami bez konieczności ręcznego wykonywania poleceń OpenSSL.
 Dzięki niemu możesz skupić się na rozwijaniu aplikacji, zamiast martwić się o bezpieczeństwo połączeń.
 
+
+Dziala:
+-------
 # https://auto.local
  
     Welcome to nginx!

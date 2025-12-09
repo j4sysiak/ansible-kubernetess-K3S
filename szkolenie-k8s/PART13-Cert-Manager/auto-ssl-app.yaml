@@ -44,7 +44,7 @@ spec:
   tls:
     - hosts:
         - auto.local
-      secretName: automat-tls-secret  # <--- Tego sekretu NIE MA. Cert-Manager go stworzy!
+      secretName: automat-tls-secret  # <--- Tego sekretu NIE MA. Cert-Manager sam osobiście go utworzy!
   rules:
     - host: auto.local
       http:
