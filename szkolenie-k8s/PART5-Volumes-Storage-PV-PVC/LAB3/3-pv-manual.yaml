@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: manualny-pv-500m
+spec:
+  storageClassName: manual  # <--- Wymyślona nazwa klasy (ważne!)
+  capacity:
+    storage: 500Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/tmp/data-manual" # Ścieżka wewnątrz kontenera k3s-master

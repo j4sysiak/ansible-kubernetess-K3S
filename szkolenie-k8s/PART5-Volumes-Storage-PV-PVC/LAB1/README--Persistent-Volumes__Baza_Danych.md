@@ -1,5 +1,5 @@
-Trwałość Danych (Storage) – bo kontenery znikają, a dane muszą zostać.
----------------------------------------------------------------------
+Trwałość Danych (stateful Storage) – bo kontenery znikają, a dane muszą zostać.
+-------------------------------------------------------------------------------
 
 Lab 8: Persistent Volumes (Baza Danych)
 Scenariusz: Uruchamiasz bazę MySQL. Jeśli Pod się zrestartuje (co się zdarza), baza wstanie pusta. Musimy podpiąć "zewnętrzny dysk".

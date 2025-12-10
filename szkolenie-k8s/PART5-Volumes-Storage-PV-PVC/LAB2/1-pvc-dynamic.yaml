@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: moje-zlecenie-pvc  # <--- Nazwa naszego PVC
+spec:
+  accessModes:
+    - ReadWriteOnce      # Tylko jeden node może pisać (standard)
+  storageClassName: local-path # <--- Wskazujemy naszego "Wykonawcę" (K3s default: `kubectl get sc`)
+  resources:
+    requests:
+      storage: 100Mi

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: manualne-zlecenie-pvc
+spec:
+  storageClassName: manual # <--- Musi pasować do PV
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi # Mniej niż 500Mi, więc się zmieści

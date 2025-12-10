@@ -24,6 +24,7 @@ Czy KUBECONFIG jest ustawione?
 
 
 a to umozliwi użycie k3s kubectl poza dockerowym kontenerem, czyli na local hoście.
+# cd /home/jacek/dev/ansible-kubernetess-K3S
 # export KUBECONFIG=$PWD/k3s-kubeconfig
 sprawdź pody w klastrze k3s:
 # docker exec -it k3s-master bash -c 'command -v k3s >/dev/null && k3s kubectl --kubeconfig=/etc/rancher/k3s/k3s.yaml get pods -A || echo "k3s binary not found"'
