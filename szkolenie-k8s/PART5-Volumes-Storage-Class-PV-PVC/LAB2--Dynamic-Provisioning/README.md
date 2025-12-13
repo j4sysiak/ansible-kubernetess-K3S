@@ -5,6 +5,8 @@ Volumes-Storage-PV-PVC
 
 # cd /home/jacek/dev/ansible-kubernetess-K3S/szkolenie-k8s/PART5-Volumes-Storage-PV-PVC/LAB2
 
+LAB2:
+-----
 
 To jest jeden z najtrudniejszych, ale absolutnie niezbędnych tematów w Kubernetesie. 
 Bez zrozumienia wolumenów (Volumes) nie da się uruchomić żadnej bazy danych ani poważnej aplikacji `stateful`.
@@ -143,11 +145,11 @@ Sprawdź, czy plik tam jest:
 Jeśli widzisz "DANE TRWALE", to znaczy, że zadziałało. Dysk (PV) przeżył śmierć Poda.
 
 Co się właśnie stało:
-1. Stworzyłeś `PersistentVolumeClaim` (Zlecenie na dysk).
-2. Stworzyłeś Poda, który używa tego PVC.
-3. Kubernetes przydzielił Poda do węzła (k3s-master
-4. StorageClass (local-path) zobaczył, gdzie jest Pod i stworzył fizyczny `PersistentVolume` (folder na dysku).
-5. Kubernetes "spiął" (Bound) PVC z PV.
+1. Stworzyłeś: `PVC -  PersistentVolumeClaim` (Zlecenie na dysk).
+2. Stworzyłeś Poda, który używa tego `PVC`.
+3. Kubernetes przydzielił Poda do węzła (k3s-master)
+4. `StorageClass` (o nazwie local-path) zobaczył, gdzie jest Pod i stworzył fizyczny `PersistentVolume` (folder na dysku).
+5. Kubernetes "spiął" (Bound) `PVC` z `PV`.
 6. Pod uruchomił się, mając dostęp do trwałego dysku.
 7. Dane na tym dysku przetrwały restart Poda.
 Gratulacje! Jesteś teraz mistrzem Dynamicznego Provisioningu w Kubernetes!

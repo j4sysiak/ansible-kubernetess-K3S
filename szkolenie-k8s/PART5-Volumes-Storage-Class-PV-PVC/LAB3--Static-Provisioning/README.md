@@ -5,13 +5,15 @@ Volumes-Storage-PV-PVC
 
 # cd /home/jacek/dev/ansible-kubernetess-K3S/szkolenie-k8s/PART5-Volumes-Storage-PV-PVC/LAB3
 
+LAB3:
+-----
 
 Czasami (rzadko) szef powie: "Mamy stary dysk twardy (NFS lub folder), musisz go podpiąć ręcznie, automat tego nie zrobi".
 Wtedy musisz ręcznie stworzyć `PV` i ręcznie `PVC`.
 
 KROK 1.
 -------
-Stwórz PV (Fizyczny zasób) - 3-pv-manual.yaml:
+Stwórz `PV` (Fizyczny zasób) - 3-pv-manual.yaml:
    W K3s na Dockerze użyjemy typu hostPath (folder wewnątrz kontenera Dockera).
 
 Wdróż: 

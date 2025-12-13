@@ -1,7 +1,10 @@
 Trwałość Danych (stateful Storage) – bo kontenery znikają, a dane muszą zostać.
 -------------------------------------------------------------------------------
 
-Lab 8: 
+# cd /home/jacek/dev/ansible-kubernetess-K3S/szkolenie-k8s/PART5-Volumes-Storage-Class-PV-PVC/LAB1
+
+Lab 1: 
+------
 Persistent Volumes (Baza Danych):  `PV`
 Scenariusz: Uruchamiasz bazę MySQL. 
 Jeśli Pod się zrestartuje (co się zdarza), baza wstanie pusta. Musimy podpiąć "zewnętrzny dysk".
