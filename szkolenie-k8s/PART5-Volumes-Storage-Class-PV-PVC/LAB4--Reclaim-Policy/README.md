@@ -2,7 +2,7 @@ LAB4:
 ------
 Reclaim Policy (Polityka Odzyskiwania)
 ---------------------------------------
-# cd /home/jacek/dev/ansible-kubernetess-K3S/szkolenie-k8s/PART5-Volumes-Storage-Class-PV-PVC/LAB4--Reclaim-Policy
+# cd ~/dev/ansible-kubernetess-K3S/szkolenie-k8s/PART5-Volumes-Storage-Class-PV-PVC/LAB4--Reclaim-Policy
 
 krytyczny element.
 Co się stanie z naszymi danymi, jak ktoś przez pomyłkę skasuje `PVC` (Zlecenie)?"

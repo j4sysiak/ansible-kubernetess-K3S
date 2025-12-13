@@ -1,7 +1,7 @@
 Trwałość Danych (stateful Storage) – bo kontenery znikają, a dane muszą zostać.
 -------------------------------------------------------------------------------
 
-# cd /home/jacek/dev/ansible-kubernetess-K3S/szkolenie-k8s/PART5-Volumes-Storage-Class-PV-PVC/LAB1
+# cd ~/dev/ansible-kubernetess-K3S/szkolenie-k8s/PART5-Volumes-Storage-Class-PV-PVC/LAB1
 
 Lab 1: 
 ------

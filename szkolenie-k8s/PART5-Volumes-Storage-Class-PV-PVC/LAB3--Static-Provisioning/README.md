@@ -2,12 +2,10 @@ Volumes-Storage-PV-PVC
 ----------------------
 `Static Provisioning` (Lab 3): (Ręczna robota)
 ----------------------------------------------
-
-# cd /home/jacek/dev/ansible-kubernetess-K3S/szkolenie-k8s/PART5-Volumes-Storage-PV-PVC/LAB3
+# cd ~/dev/ansible-kubernetess-K3S/szkolenie-k8s/PART5-Volumes-Storage-Class-PV-PVC/LAB3--Static-Provisioning
 
 LAB3:
 -----
-
 Czasami (rzadko) szef powie: "Mamy stary dysk twardy (NFS lub folder), musisz go podpiąć ręcznie, automat tego nie zrobi".
 Wtedy musisz ręcznie stworzyć `PV` i ręcznie `PVC`.
 

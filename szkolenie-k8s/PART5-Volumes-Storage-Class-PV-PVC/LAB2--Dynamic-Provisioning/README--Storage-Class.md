@@ -1,6 +1,8 @@
-Storage Class (SC) jest często "cichym bohaterem", którego nie widać, dopóki się go nie poszuka, 
+# cd ~/dev/ansible-kubernetess-K3S/szkolenie-k8s/PART5-Volumes-Storage-Class-PV-PVC/LAB2--Dynamic-Provisioning
+
+`Storage Class` (SC) jest często "cichym bohaterem", którego nie widać, dopóki się go nie poszuka, 
 a to on odwala całą czarną robotę.
-W Twoim ćwiczeniu (LAB2) Storage Class znajduje się w dwóch miejscach:
+W Twoim ćwiczeniu (LAB2--Dynamic-Provisioning) `Storage Class` znajduje się w dwóch miejscach:
 1. W Twoim pliku YAML (Zlecenie)
    Otwórz plik `1-pvc-dynamic.yaml`. 
    Zobaczysz tam linijkę:

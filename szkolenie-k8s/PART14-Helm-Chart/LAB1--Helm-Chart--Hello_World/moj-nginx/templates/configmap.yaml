@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  # Używamy zmiennej z Helma, żeby nazwa była unikalna
+  name: {{ .Release.Name }}-config
+data:
+  # Tu wstawiamy naszą zmienną z pliku values.yaml
+  index.html: |
+    <html>
+    <h1>Wiadomosc od Szefa:</h1>
+    <p>{{ .Values.szef.wiadomosc }}</p>
+    </html>
