@@ -1,7 +1,7 @@
 Helm to najlepszy przyjaciel administratora Kubernetes. 
 Jak raz to zrozumiesz, nie będziesz chciał wracać do zwykłych plików YAML.
 To jest esencja Helma: Jeden szablon, wiele różnych konfiguracji.
-
+ 
 # cd ~/dev/ansible-kubernetess-K3S/szkolenie-k8s/PART14-Helm-Chart/LAB1--Helm-Chart--Hello_World
 
 opis Helma i Charta:

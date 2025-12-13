@@ -1,2 +1,19 @@
+# LAB1 - Definiowanie wartości domyślnych dla szablonu Helm
 szef:
   wiadomosc: "Domyślna wiadomość: Pracujcie ciężko!"
+
+
+# LAB2 - Włączanie lub wyłączanie Ingress za pomocą przełącznika
+ingress:
+  enabled: true  # <--- To będzie nasz przełącznik
+  host: "moj-nginx.local"
+
+
+# LAB3 - Definiowanie zmiennych środowiskowych dla kontenera
+moje_zmienne:
+  - name: KOLOR
+    value: "czerwony"
+  - name: SRODOWISKO
+    value: "produkcja"
+  - name: BAZA_DANYCH
+    value: "postgres"

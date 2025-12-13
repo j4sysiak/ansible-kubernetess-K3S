@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          env:
+            # --- POCZATEK PĘTLI ---
+            {{- range .Values.moje_zmienne }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+            # --- KONIEC PĘTLI ---

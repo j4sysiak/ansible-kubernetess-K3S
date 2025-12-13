@@ -1,0 +1,8 @@
+GRATULACJE! Wdrozyles aplikacje: {{ .Release.Name }}.
+
+1. Twoja wiadomosc od szefa to: {{ .Values.szef.wiadomosc }}
+
+2. Aby sprawdzic pody, wpisz:
+   kubectl get pods -l app={{ .Release.Name }}
+
+3. Milego dnia!
