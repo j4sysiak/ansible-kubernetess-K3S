@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bezpieczne-zlecenie-pvc
+spec:
+  storageClassName: manual-safe # Musi pasować do PV
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi

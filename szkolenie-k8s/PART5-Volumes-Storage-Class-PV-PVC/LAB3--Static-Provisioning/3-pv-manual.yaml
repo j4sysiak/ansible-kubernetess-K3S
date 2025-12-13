@@ -8,5 +8,6 @@ spec:
     storage: 500Mi
   accessModes:
     - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete  # Domyślnie jest Delete - cyzli jak usuwasc PVC to i PV ginie i dupa
   hostPath:
     path: "/tmp/data-manual" # Ścieżka wewnątrz kontenera k3s-master
