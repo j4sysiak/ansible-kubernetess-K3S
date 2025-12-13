@@ -4,7 +4,7 @@ metadata:
   name: moje-zlecenie-pvc  # <--- Nazwa naszego PVC
 spec:
   accessModes:
-    - ReadWriteOnce      # Tylko jeden node może pisać (standard)
+    - ReadWriteOnce      # Tylko jeden NODE może pisać (standard)
   storageClassName: local-path # <--- Wskazujemy naszego "Wykonawcę: Storage class" (K3s default: `kubectl get sc`)
   resources:
     requests:

@@ -7,17 +7,17 @@ Volumes-Storage-PV-PVC
 
 
 To jest jeden z najtrudniejszych, ale absolutnie niezbędnych tematów w Kubernetesie. 
-Bez zrozumienia wolumenów (Volumes) nie da się uruchomić żadnej bazy danych ani poważnej aplikacji (stateful).
+Bez zrozumienia wolumenów (Volumes) nie da się uruchomić żadnej bazy danych ani poważnej aplikacji `stateful`.
 Szef ma rację – musisz rozumieć różnicę między tymi trzema pojęciami, bo na początku wydają się one masłem maślanym.
 Przygotowałem dla Ciebie "Volume Masterclass" w Twoim środowisku K3s.
 
 Teoria dla Szefa (Analogia: Budowa Domu)
-Zanim wpiszemy kod, musisz "czuć" różnicę. Wyobraź sobie, że budujesz dom (Pod).
+Zanim wpiszemy kod, musisz "czuć" różnicę. Wyobraź sobie, że budujesz dom `POD`.
  - `StorageClass` (SC) = "Deweloper / Wykonawca":
     Mówisz: "Chcę dysk typu 'Szybki SSD'" albo "Chcę tani dysk sieciowy". 
     `StorageClass` to definicja RODZAJU dysku.
 
-W K3s masz domyślnego "wykonawcę" o nazwie `local-path` (tworzy foldery na dysku kontenera).
+W K3s masz domyślnego "wykonawcę, czyli Storage Class" o nazwie `local-path` (tworzy foldery na dysku kontenera).
 
 `PersistentVolumeClaim` (PVC) = "Kupon / Zlecenie":
 To jest Twój dokument żądania. 
@@ -28,9 +28,10 @@ Ty (jako programista) tworzysz tylko PVC. Nie obchodzi Cię, skąd ten dysk się
 To jest konkretny kawałek zasobu (np. fizyczny folder, dysk w chmurze AWS EBS).
 `PV` jest "spinany" (Bound) z Twoim kuponem `PVC`.
 W skrócie: 
-Ty tworzysz `PVC` (Zlecenie), a `StorageClass` (Automat) tworzy dla Ciebie `PV` (Dysk).
+Ty tworzysz `PVC` (Zlecenie), a `StorageClass` (Automat / Wykonawca) tworzy dla Ciebie `PV` (Dysk).
 
 LAB2: 
+-----
 Dynamic Provisioning (Magia Automatyzacji)
 To jest sposób, w jaki pracuje się w 99% przypadków w chmurze. 
 Ty prosisz o dysk `PVC`, a klaster sam go tworzy.
@@ -58,22 +59,27 @@ Krok 3.
 Obserwuj magię:
    Sprawdź PVC:
 # kubectl get pvc
-          NAME                STATUS    VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-    ----> moje-zlecenie-pvc   Pending                                                                        local-path     <unset>                 77s
+          NAME                STATUS    VOLUME  CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+    ----> moje-zlecenie-pvc   Pending                                     local-path     <unset>                 77s
  
-
-Twoje PVC wisi w stanie Pending, ponieważ domyślna klasa pamięci w K3s (local-path) ma ustawiony tryb: WaitForFirstConsumer.
+ 
+Twoje `PVC` wisi w stanie `Pending`, ponieważ domyślna klasa pamięci w K3s (local-path) ma ustawiony tryb: `WaitForFirstConsumer`.
 Co to znaczy "WaitForFirstConsumer"?
 Wróćmy do analogii budowlanej:
-Złożyłeś Zlecenie (PVC) u Wykonawcy.
-Wykonawca mówi: "Dobra, widzę zlecenie. Ale nie będę kopał dziury w ziemi (tworzył PV), dopóki nie powiesz mi, GDZIE stanie dom (Pod)."
-K3s jest sprytny. Nie tworzy wolumenu od razu, bo w klastrach wielowęzłowych musi wiedzieć, na którym konkretnie serwerze uruchomi się Pod, żeby tam stworzyć pliki.
-Rozwiązanie: Musisz stworzyć Poda
-Dopóki nie uruchomisz Poda, który używa tego PVC, status będzie Pending.
+Złożyłeś Zlecenie `PVC` u Wykonawcy.
+Wykonawca mówi:
+"Dobra, widzę zlecenie. 
+Ale nie będę kopał dziury w ziemi (tworzył PV), dopóki nie powiesz mi, GDZIE stanie dom (Pod)."
+K3s jest sprytny. 
+Nie tworzy wolumenu od razu, bo w klastrach wielowęzłowych musi wiedzieć, 
+             na którym konkretnie serwerze uruchomi się Pod, żeby tam stworzyć pliki.
+Rozwiązanie:
+Musisz stworzyć Poda
+Dopóki nie uruchomisz Poda, który używa tego `PVC`, status będzie Pending.
 
 
 
-Sprawdź PV (którego NIE tworzyłeś ręcznie!):
+Sprawdź `PV` (którego NIE tworzyłeś ręcznie!):
 # kubectl get pv
     NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                                                                               STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
     pvc-1be55cf7-d6c3-4c65-a9ae-2ed6470ba793   1Gi        RWO            Delete           Bound    monitoring/prometheus-prometheus-stack-kube-prom-prometheus-db-prometheus-prometheus-stack-kube-prom-prometheus-0   local-path     <unset>                          18d
@@ -85,13 +91,13 @@ Na liście `kubectl get pv` na razie nie ma wolumenu przypisanego do `default/mo
             że StorageClass (Twój "Wykonawca") jeszcze nie przystąpił do pracy.
 Dlaczego? Bo wciąż czeka na `Krok 4`, czyli uruchomienie Poda.
 Łańcuch wydarzeń (Co musi się stać):
-1. Ty: Tworzysz PVC (Zlecenie). -> Status: Pending.
-2. StorageClass: Widzi zlecenie, ale mówi: "Czekam na pierwszego klienta (WaitForFirstConsumer)".
+1. Ty: Tworzysz `PVC` (Zlecenie). -> Status: `Pending`.
+2. `StorageClass`: Widzi zlecenie, ale mówi: "Czekam na pierwszego klienta (WaitForFirstConsumer)".
 3. Ty: Tworzysz Poda (2-pod-dynamic.yaml). <-- TU JESTEŚMY
 4. Kubernetes (Scheduler): Przypisuje Poda do konkretnego węzła (k3s-master).
-5. StorageClass: "Aha! Pod ma ruszyć na k3s-master. To teraz wiem, gdzie stworzyć folder!".
-6. StorageClass: Tworzy fizyczny PV.
-7. Kubernetes: Zmienia status PVC na Bound.
+5. `StorageClass`: "Aha! Pod ma ruszyć na k3s-master. To teraz wiem, gdzie stworzyć folder!".
+6. `StorageClass`: Tworzy fizyczny `PV`.
+7. Kubernetes: Zmienia status `PVC` na `Bound`.
 8. Pod: Uruchamia się (Running).
 
 To musisz zrobić teraz.

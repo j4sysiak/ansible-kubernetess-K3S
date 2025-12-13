@@ -14,4 +14,4 @@ spec:
   volumes:
     - name: moj-vol
       persistentVolumeClaim:
-        claimName: moje-zlecenie-pvc # <--- Podpinamy nasze zlecenie
+        claimName: moje-zlecenie-pvc # <--- Podpinamy nasze zlecenie - tj. Nazwa naszego PVC w pliku zlecenia PVC:  1-pvc-dynamic.yaml
