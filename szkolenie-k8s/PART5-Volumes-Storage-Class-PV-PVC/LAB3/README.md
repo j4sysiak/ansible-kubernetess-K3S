@@ -61,8 +61,10 @@ Kubernetes znalazł pasujące do siebie `PV` i `PVC` i je "ożenił".
 Podsumowanie dla Szefa:
 -----------------------
 `Static Provisioning` (Lab 2): 
-"Używamy tego tylko, jak mamy specyficzny, istniejący już zasób (np. macierz dyskową), który musimy podpiąć 
-                                                                                               'na sztywno' do klastra."
+"Używamy tego tylko, jak mamy specyficzny, istniejący już zasób (np. macierz dyskową),
+           który musimy podpiąć 'na sztywno' do klastra.
+Automat tego nie zrobi, więc musimy ręcznie stworzyć PV i PVC."
+
 
 
 

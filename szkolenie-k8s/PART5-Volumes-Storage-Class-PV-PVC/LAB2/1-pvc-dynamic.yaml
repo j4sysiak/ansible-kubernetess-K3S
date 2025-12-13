@@ -5,7 +5,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce      # Tylko jeden node może pisać (standard)
-  storageClassName: local-path # <--- Wskazujemy naszego "Wykonawcę" (K3s default: `kubectl get sc`)
+  storageClassName: local-path # <--- Wskazujemy naszego "Wykonawcę: Storage class" (K3s default: `kubectl get sc`)
   resources:
     requests:
       storage: 100Mi

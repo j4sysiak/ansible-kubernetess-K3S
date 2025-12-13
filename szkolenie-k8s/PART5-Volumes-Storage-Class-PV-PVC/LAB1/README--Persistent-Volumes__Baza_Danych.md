@@ -1,18 +1,20 @@
 Trwałość Danych (stateful Storage) – bo kontenery znikają, a dane muszą zostać.
 -------------------------------------------------------------------------------
 
-Lab 8: Persistent Volumes (Baza Danych)
-Scenariusz: Uruchamiasz bazę MySQL. Jeśli Pod się zrestartuje (co się zdarza), baza wstanie pusta. Musimy podpiąć "zewnętrzny dysk".
+Lab 8: 
+Persistent Volumes (Baza Danych):  `PV`
+Scenariusz: Uruchamiasz bazę MySQL. 
+Jeśli Pod się zrestartuje (co się zdarza), baza wstanie pusta. Musimy podpiąć "zewnętrzny dysk".
 W Kubernetesie robimy to w dwóch krokach:
-PVC (PersistentVolumeClaim): "Zlecenie" na dysk (np. "Poproszę 1GB miejsca").
-VolumeMount: Podpięcie tego dysku do kontenera.
-1. Stwórz --> mysql-storage.yaml
+`PVC` (PersistentVolumeClaim): "Zlecenie" na dysk (np. "Poproszę 1GB miejsca").
+`VolumeMount`: Podpięcie tego dysku do kontenera.
+1. Stwórz `PVC` --> mysql-storage--pvc.yaml   
 2. Stwórz --> mysql-deployment.yaml
 
 3. Zadanie dla Ciebie (Test Trwałości):
 
-Wdróż Persistent Volume Claim:
-# kubectl apply -f mysql-storage.yaml
+Wdróż Persistent Volume Claim `PVC`:
+# kubectl apply -f mysql-storage--pvc.yaml
     persistentvolumeclaim/mysql-pv-claim created
 
 Wdróż Deployment:

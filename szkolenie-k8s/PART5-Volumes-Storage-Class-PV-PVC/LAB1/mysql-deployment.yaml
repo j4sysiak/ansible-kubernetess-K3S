@@ -27,4 +27,4 @@ spec:
       volumes:
         - name: mysql-persistent-storage
           persistentVolumeClaim:
-            claimName: mysql-pv-claim    # <--- Łączymy z naszym "zleceniem"
+            claimName: mysql-pv-claim    # <--- Łączymy z naszym "zleceniem" w pliku mysql-storage--pvc.yaml
