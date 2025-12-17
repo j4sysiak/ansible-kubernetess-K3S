@@ -1,0 +1,17 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: moja-baza-szefa
+  namespace: default
+spec:
+  instances: 3  # <--- Chcę 3 instancje (1 Primary + 2 Standby)
+
+  # Konfiguracja dysków
+  storage:
+    size: 1Gi
+
+  # Opcjonalnie: Bootstrap (użytkownik/baza)
+  bootstrap:
+    initdb:
+      database: appdb
+      owner: appuser

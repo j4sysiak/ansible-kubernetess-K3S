@@ -29,7 +29,7 @@ a to umozliwi użycie k3s kubectl poza dockerowym kontenerem, czyli na local ho�
 sprawdź pody w klastrze k3s:
 # docker exec -it k3s-master bash -c 'command -v k3s >/dev/null && k3s kubectl --kubeconfig=/etc/rancher/k3s/k3s.yaml get pods -A || echo "k3s binary not found"'
 lub alternatywnie:
-# kubectl get pods -A  (to zadziala, jak bedziedz mial ustawiony KUBECONFIG na k3s-kubeconfig i plik byl skopiowany lokalnie)
+# kubectl get pods -A      (to zadziala, jak bedziedz mial ustawiony KUBECONFIG na k3s-kubeconfig i plik byl skopiowany lokalnie)
     NAMESPACE          NAME                                       READY   STATUS    RESTARTS        AGE
     hello-kubernetes   hello-kubernetes-app-2-84d5b6c48b-zw8cf    1/1     Running   1 (3m49s ago)   46h
     hello-world        hello-world-7f86d974d5-2qfp2               1/1     Running   1 (3m49s ago)   47h
