@@ -2,6 +2,7 @@ W terminalu WSL (lub Intelij) aktywuj środowisko:
 
 #  source ~/ansible-venv/bin/activate
 #  cd ~/dev/ansible-kubernetess-K3S
+# export KUBECONFIG=$PWD/k3s-kubeconfig
 
 ----------------  roles/k3s_master  --------------------
 # Step.1
