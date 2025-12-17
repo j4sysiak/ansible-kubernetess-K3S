@@ -1,7 +1,7 @@
 Operators to przyszłość zarządzania złożonymi systemami
 -------------------------------------------------------
 
-# cd ~/dev/ansible-kubernetess-K3S/szkolenie-k8s/PART15-Operator
+# cd ~/dev/ansible-kubernetess-K3S/szkolenie-k8s/PART15-Operator/LAB1-CloudNativePG-Operator
 
 Kubernetes Operator to najwyższy poziom wtajemniczenia w zarządzaniu aplikacjami.
 
@@ -41,7 +41,7 @@ Najpierw musimy "nauczyć" nasz klaster nowych sztuczek (wgrać `CRD`) i uruchom
 Użyjemy Helma (bo już go umiesz).
 
 Dodaj repozytorium i zainstaluj:
-# cd ~/dev/ansible-kubernetess-K3S/szkolenie-k8s/PART15-Operator
+# cd ~/dev/ansible-kubernetess-K3S/szkolenie-k8s/PART15-Operator/LAB1-CloudNativePG-Operator
 # helm repo add cnpg https://cloudnative-pg.github.io/charts
     "cnpg" has been added to your repositories
 
