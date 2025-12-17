@@ -44,7 +44,7 @@ Zainstaluj.
      * timed out waiting for the condition
      * 
 
-        F U C K !  timed
+        F U C K !  timed out ! ! !
 
 
 Krok 2: 
