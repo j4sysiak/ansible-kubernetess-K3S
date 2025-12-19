@@ -123,7 +123,7 @@ Wdróż to:
 Obserwuj magię (To robi wrażenie!):
 Nie patrz tylko na koniec, obserwuj proces tworzenia. 
 Operator najpierw stworzy instancję nr 1, poczeka aż wstanie, potem nr 2 i nr 3.
-# moja-baza-szefa-1-initdb-lpf97
+# watch kubectl get pods
          Every 2.0s: kubectl get pods: Friedrichshafen: Wed Dec 17 20:58:24 2025
          NAME                                READY   STATUS             RESTARTS          AGE
          [...]
@@ -131,6 +131,7 @@ Operator najpierw stworzy instancję nr 1, poczeka aż wstanie, potem nr 2 i nr 
          [...]
 
 po kilku minutach:
+# watch kubectl get pods
 
          NAME                                READY   STATUS             RESTARTS          AGE
          [...]
