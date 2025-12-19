@@ -135,7 +135,7 @@ dziala:
 https://localhost:8080/login?return_url=https%3A%2F%2Flocalhost%3A8080%2Fapplications
 
 
-1. Zaloguj się jako admin i użyj hasła z Kroku 2.
+1. Zaloguj się jako `admin` i użyj hasła z Kroku 2. - `W4asX6qsw7OKJx3H`
 2. Zobaczysz piękny interfejs graficzny.
 
 Zalogowalem sie do ArgoCD!
@@ -146,7 +146,7 @@ Wdrożenie aplikacji z GitHuba (Magia)
 Nie będziemy pisać YAML-i u siebie. 
 Weźmiemy gotową aplikację demo od twórców `ArgoCD`.
 
-W interfejsie ArgoCD kliknij + NEW APP (lewy górny róg).
+W interfejsie `ArgoCD` kliknij + NEW APP (lewy górny róg).
 Wypełnij formularz (to jest "trudne", więc uważaj):
 Application Name: guestbook
 Project: default
